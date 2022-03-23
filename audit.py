@@ -1,11 +1,23 @@
-import os, time
+import os, sys, time
 import subprocess
 import json
+from wsgiref.simple_server import sys_version
 from termcolor import colored
 
 default = 'white'
 success = 'green'
 warning = 'red'
+
+
+def dots(string):
+    s = '.'
+    sys.stdout.write(string)
+    t_end = time.time() + 0.5
+    while time.time() < t_end:
+        sys.stdout.write( s )
+        sys.stdout.flush()
+        time.sleep(0.05)
+    print("")
 
 
 def menu():
@@ -23,7 +35,7 @@ def menu():
 
     user_input = input("Enter your choice: ")
 
-    if user_input == '1': print("test test test"), time.sleep(1), menu()
+    if user_input == '1': print("\nRien"), time.sleep(1), menu()
     elif user_input == '2': audit(), time.sleep(1), menu()
     elif user_input == '3': print("\nBye !"), time.sleep(1), exit()
     else: print(colored("\nIncorrect input, please choose a valid number, asshole.", warning)), time.sleep(1), menu()
@@ -63,9 +75,7 @@ def audit():
         fix_cmd = audit["remediation"]
         passed = False
 
-        print("Auditing CIS: " + cis + "...")
-
-        time.sleep(1)
+        dots("Auditing CIS: " + cis)
 
         result = exec_cmd(audit_cmd)
 
@@ -80,4 +90,13 @@ def audit():
     print(colored("Audit completed!", success))
 
 
-main()
+if __name__ == '__main__':
+    if sys.version_info[0] < 3:
+        version = ".".join(map(str, sys.version_info[:3]))
+        print("\nYou are using Python " + version)
+        print(colored("\nPlease use Python 3 !\n", warning))
+        print("Exiting...")
+        time.sleep(0.5)
+        quit()
+    else:
+        main()

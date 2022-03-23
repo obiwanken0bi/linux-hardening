@@ -30,5 +30,101 @@
         "audit": "dpkg -s isc-dhcp-server | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'isc-dhcp-server' is not installed and no information is available",
         "remediation": ""
+    },
+    {
+        "id": 2106,
+        "cis": "2.1.6",
+        "title": "Ensure LDAP Server is not installed",
+        "audit": "dpkg -s slapd | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'slapd' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2107,
+        "cis": "2.1.7",
+        "title": "Ensure NFS is not installed",
+        "audit": "dpkg -s nfs-kernel-server | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'nfs-kernel-server' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2108,
+        "cis": "2.1.8",
+        "title": "Ensure DNS Server is not installed",
+        "audit": "dpkg -s bind9 | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'bind9' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2109,
+        "cis": "2.1.9",
+        "title": "Ensure FTP Server is not installed",
+        "audit": "dpkg -s vsftpd | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'vsftpd' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2110,
+        "cis": "2.1.10",
+        "title": "Ensure HTTP server is not installed",
+        "audit": "dpkg -s apache2 | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'apache2' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2111,
+        "cis": "2.1.11",
+        "title": "Ensure IMAP and POP3 server are not installed",
+        "audit": "dpkg -s dovecot-imapd dovecot-pop3d | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'dovecot-imapd' is not installed and no information is available\ndpkg-query: package 'dovecot-pop3d' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2112,
+        "cis": "2.1.12",
+        "title": "Ensure Samba is not installed",
+        "audit": "dpkg -s samba | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'samba' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2113,
+        "cis": "2.1.13",
+        "title": "Ensure HTTP Proxy Server is not installed",
+        "audit": "dpkg -s squid | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'squid' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2114,
+        "cis": "2.1.14",
+        "title": "Ensure SNMP Server is not installed",
+        "audit": "dpkg -s snmpd | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'snmpd' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2115,
+        "cis": "2.1.15",
+        "title": "Ensure mail transfer agent is configured for local-only mode",
+        "audit": "ss -lntu | grep -E ':25\\s' | grep -E -v '\\s(127.0.0.1|::1):25\\s'",
+        "expected": "",
+        "remediation": ""
+    },
+    {
+        "id": 2116,
+        "cis": "2.1.16",
+        "title": "Ensure rsync service is not installed",
+        "audit": "dpkg -s rsync | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'rsync' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2117,
+        "cis": "2.1.17",
+        "title": "Ensure NIS Server is not installed",
+        "audit": "dpkg -s nis | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'nis' is not installed and no information is available",
+        "remediation": ""
     }
 ]
