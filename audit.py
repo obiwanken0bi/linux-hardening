@@ -1,5 +1,6 @@
 import os, time
 import subprocess
+import json
 from termcolor import colored
 
 default = 'white'
@@ -37,26 +38,10 @@ def exec_cmd(command):
         print('Output: ' + out)
         return out
     else:
-        print('Error: '  + err)
+        # print('Error: '  + err)
+        print('Output (err): '  + err)
         return err
 
-
-def audit():
-    print("\nBeginning audit...\n")
-    audits = [
-        audit_2_1_1_1,
-        audit_2_1_3,
-        audit_2_1_4,
-        audit_2_1_5,
-        audit_2_1_6,
-        audit_2_1_7,
-        audit_2_1_8
-    ]
-    for func in audits:
-        time.sleep(0.5)
-        func()
-        print("")
-    print(colored("Finished!", success))
 
 def main():
     print("\nHello there!")
@@ -64,115 +49,35 @@ def main():
     menu()
 
 
-##############################
-# 2 - Services (Workstation) #
-##############################
+def audit():
+    print("")
+    f = open('audit_list.json')
+    audits = json.load(f)
 
-# systemctl --now mask <service_name>
+    for audit in audits:
+        id = audit["id"]
+        cis = audit["cis"]
+        title = audit["title"]
+        audit_cmd = audit["audit"]
+        expected = audit["expected"]
+        fix_cmd = audit["remediation"]
+        passed = False
 
-# 2.1.1 Time Synchronization
+        print("Auditing CIS: " + cis + "...")
 
-# 2.1.1.1 Ensure time synchronization is in use
-def audit_2_1_1_1():
-    name = "2.1.1.1 Ensure time synchronization is in use"
-    passed = False
-    command1 = "systemctl is-enabled systemd-timesyncd"
-    command2 = "dpkg -s chrony"
-    command3 = "dpkg -s ntp"
+        time.sleep(1)
 
-    result1 = exec_cmd(command1)
-    if result1 == "enabled":
-        passed = True
-        print(colored("[✓] " + name, success))
-    else:
-        print(colored("[X] " + name, warning))
-    
-    # result2 = execute_command(command2)
-    # result3 = execute_command(command3)
+        result = exec_cmd(audit_cmd)
 
+        if expected in result:
+            passed = True
+            print(colored("[✓] " + title, success))
+        else:
+            print(colored("[X] " + title, warning))
+        print("")
+        time.sleep(0.2)
 
-# 2.1.3 Ensure Avahi Server is not installed
-def audit_2_1_3():
-    name = "2.1.3 Ensure Avahi Server is not installed"
-    passed = False
-    command = "dpkg -s avahi-daemon | grep -E '(Status:|not installed)'"
-    result = exec_cmd(command)
-    substring = "dpkg-query: package 'avahi-daemon' is not installed and no information is available"
-    if substring in result:
-        passed = True
-        print(colored("[✓] " + name, success))
-    else:
-        print(colored("[X] " + name, warning))
-
-
-# 2.1.4 Ensure CUPS is not installed
-def audit_2_1_4():
-    name = "2.1.4 Ensure CUPS is not installed"
-    passed = False
-    command = "dpkg -s cups | grep -E '(Status:|not installed)'"
-    result = exec_cmd(command)
-    substring = "dpkg-query: package 'cups' is not installed and no information is available"
-    if substring in result:
-        passed = True
-        print(colored("[✓] " + name, success))
-    else:
-        print(colored("[X] " + name, warning))
-
-
-# 2.1.5 Ensure DHCP Server is not installed
-def audit_2_1_5():
-    name = "2.1.5 Ensure DHCP Server is not installed"
-    passed = False
-    command = "dpkg -s isc-dhcp-server | grep -E '(Status:|not installed)'"
-    result = exec_cmd(command)
-    substring = "dpkg-query: package 'isc-dhcp-server' is not installed and no information is available"
-    if substring in result:
-        passed = True
-        print(colored("[✓] " + name, success))
-    else:
-        print(colored("[X] " + name, warning))
-
-
-# 2.1.6 Ensure LDAP server is not installed
-def audit_2_1_6():
-    name = "2.1.6 Ensure LDAP Server is not installed"
-    passed = False
-    command = "dpkg -s slapd | grep -E '(Status:|not installed)'"
-    result = exec_cmd(command)
-    substring = "dpkg-query: package 'slapd' is not installed and no information is available"
-    if substring in result:
-        passed = True
-        print(colored("[✓] " + name, success))
-    else:
-        print(colored("[X] " + name, warning))
-
-
-# 2.1.7 Ensure NFS is not installed
-def audit_2_1_7():
-    name = "2.1.7 Ensure NFS is not installed"
-    passed = False
-    command = "dpkg -s nfs-kernel-server | grep -E '(Status:|not installed)'"
-    result = exec_cmd(command)
-    substring = "dpkg-query: package 'nfs-kernel-server' is not installed and no information is available"
-    if substring in result:
-        passed = True
-        print(colored("[✓] " + name, success))
-    else:
-        print(colored("[X] " + name, warning))
-
-
-# 2.1.8 Ensure DNS Server is not installed
-def audit_2_1_8():
-    name = "2.1.8 Ensure DNS Server is not installed"
-    passed = False
-    command = "dpkg -s bind9 | grep -E '(Status:|not installed)'"
-    result = exec_cmd(command)
-    substring = "dpkg-query: package 'bind9' is not installed and no information is available"
-    if substring in result:
-        passed = True
-        print(colored("[✓] " + name, success))
-    else:
-        print(colored("[X] " + name, warning))
+    print(colored("Audit completed!", success))
 
 
 main()

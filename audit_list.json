@@ -1,0 +1,34 @@
+[
+    {
+        "id": 2101,
+        "cis": "2.1.1",
+        "title": "Ensure time synchronization is in use",
+        "audit": "systemctl is-enabled systemd-timesyncd",
+        "expected": "enabled",
+        "remediation": ""
+    },
+    {
+        "id": 2103,
+        "cis": "2.1.3",
+        "title": "Ensure Avahi Server is not installed",
+        "audit": "dpkg -s avahi-daemon | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'avahi-daemon' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2104,
+        "cis": "2.1.4",
+        "title": "Ensure CUPS is not installed",
+        "audit": "dpkg -s cups | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'cups' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2105,
+        "cis": "2.1.5",
+        "title": "Ensure DHCP Server is not installed",
+        "audit": "dpkg -s isc-dhcp-server | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'isc-dhcp-server' is not installed and no information is available",
+        "remediation": ""
+    }
+]
