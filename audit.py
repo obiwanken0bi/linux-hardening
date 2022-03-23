@@ -1,5 +1,10 @@
 import os, time
 import subprocess
+from termcolor import colored
+
+default = 'white'
+success = 'green'
+warning = 'red'
 
 
 def menu():
@@ -11,6 +16,7 @@ def menu():
         |         1. How to use this tool        |
         |         2. Launch audit                |
         |         3. Exit                        |
+        |                                        |
         |________________________________________|
     """)
 
@@ -19,7 +25,7 @@ def menu():
     if user_input == '1': print("test test test"), time.sleep(1), menu()
     elif user_input == '2': audit(), time.sleep(1), menu()
     elif user_input == '3': print("\nBye !"), time.sleep(1), exit()
-    else: print("Incorrect input, please choose a valid number, asshole."), time.sleep(1), menu()
+    else: print(colored("\nIncorrect input, please choose a valid number, asshole.", warning)), time.sleep(1), menu()
 
 
 def exec_cmd(command):
@@ -50,7 +56,7 @@ def audit():
         time.sleep(0.5)
         func()
         print("")
-    print("Finished!")
+    print(colored("Finished!", success))
 
 def main():
     print("\nHello there!")
@@ -74,30 +80,15 @@ def audit_2_1_1_1():
     command2 = "dpkg -s chrony"
     command3 = "dpkg -s ntp"
 
-    # FIRST VERSION
-    # (out1, err1) = execute_command(command1)
-    # if (err1 == "" and out1 == "enabled"):
-    #     passed = True
-    #     print("[✓] " + name)
-    # else:
-    #     print("[ ] " + name)
-
-    # (out2, err2) = execute_command(command2)
-
-    # SECOND VERSION
     result1 = exec_cmd(command1)
     if result1 == "enabled":
         passed = True
-        print("[✓] " + name)
+        print(colored("[✓] " + name, success))
     else:
-        print("[X] " + name)
+        print(colored("[X] " + name, warning))
     
     # result2 = execute_command(command2)
-    # if result2 == "enabled":
-    #     passed = True
-    #     print("[✓] " + name)
-    # else:
-    #     print("[ ] " + name)
+    # result3 = execute_command(command3)
 
 
 # 2.1.3 Ensure Avahi Server is not installed
@@ -109,9 +100,9 @@ def audit_2_1_3():
     substring = "dpkg-query: package 'avahi-daemon' is not installed and no information is available"
     if substring in result:
         passed = True
-        print("[✓] " + name)
+        print(colored("[✓] " + name, success))
     else:
-        print("[X] " + name)
+        print(colored("[X] " + name, warning))
 
 
 # 2.1.4 Ensure CUPS is not installed
@@ -123,9 +114,9 @@ def audit_2_1_4():
     substring = "dpkg-query: package 'cups' is not installed and no information is available"
     if substring in result:
         passed = True
-        print("[✓] " + name)
+        print(colored("[✓] " + name, success))
     else:
-        print("[X] " + name)
+        print(colored("[X] " + name, warning))
 
 
 # 2.1.5 Ensure DHCP Server is not installed
@@ -137,9 +128,9 @@ def audit_2_1_5():
     substring = "dpkg-query: package 'isc-dhcp-server' is not installed and no information is available"
     if substring in result:
         passed = True
-        print("[✓] " + name)
+        print(colored("[✓] " + name, success))
     else:
-        print("[X] " + name)
+        print(colored("[X] " + name, warning))
 
 
 # 2.1.6 Ensure LDAP server is not installed
@@ -151,9 +142,9 @@ def audit_2_1_6():
     substring = "dpkg-query: package 'slapd' is not installed and no information is available"
     if substring in result:
         passed = True
-        print("[✓] " + name)
+        print(colored("[✓] " + name, success))
     else:
-        print("[X] " + name)
+        print(colored("[X] " + name, warning))
 
 
 # 2.1.7 Ensure NFS is not installed
@@ -165,9 +156,9 @@ def audit_2_1_7():
     substring = "dpkg-query: package 'nfs-kernel-server' is not installed and no information is available"
     if substring in result:
         passed = True
-        print("[✓] " + name)
+        print(colored("[✓] " + name, success))
     else:
-        print("[X] " + name)
+        print(colored("[X] " + name, warning))
 
 
 # 2.1.8 Ensure DNS Server is not installed
@@ -179,9 +170,9 @@ def audit_2_1_8():
     substring = "dpkg-query: package 'bind9' is not installed and no information is available"
     if substring in result:
         passed = True
-        print("[✓] " + name)
+        print(colored("[✓] " + name, success))
     else:
-        print("[X] " + name)
+        print(colored("[X] " + name, warning))
 
 
 main()
