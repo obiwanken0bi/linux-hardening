@@ -9,14 +9,22 @@ success = 'green'
 warning = 'red'
 
 
+def clear():
+    os.system("clear")
+
+
+def wait(s):
+    time.sleep(s)
+
+
 def dots(string):
     s = '.'
     sys.stdout.write(string)
-    t_end = time.time() + 0.5
+    t_end = time.time() + 0.25
     while time.time() < t_end:
         sys.stdout.write( s )
         sys.stdout.flush()
-        time.sleep(0.05)
+        time.sleep(0.025)
     print("")
 
 
@@ -36,7 +44,7 @@ def menu():
     user_input = input("Enter your choice: ")
 
     if user_input == '1': print("\nRien"), time.sleep(1), menu()
-    elif user_input == '2': audit(), time.sleep(1), menu()
+    elif user_input == '2': clear(), audit(), time.sleep(1), menu()
     elif user_input == '3': print("\nBye !"), time.sleep(1), exit()
     else: print(colored("\nIncorrect input, please choose a valid number, asshole.", warning)), time.sleep(1), menu()
 
@@ -56,15 +64,38 @@ def exec_cmd(command):
 
 
 def main():
+    clear()
     print("\nHello there!")
-    time.sleep(1)
+    time.sleep(0.5)
     menu()
+
+
+def display_audit_results(ok, nok):
+    print("""
+         ___________
+        |           |
+        |   Audit   |
+        |  results  |
+        |___________|
+           ||
+    (\__/) ||
+    (•ㅅ•) ||
+    /     づ
+    """)
+    time.sleep(0.5)
+    print(colored("    Pass :    " + str(ok), success))
+    print(colored("    Fail :    " + str(nok) + "\n", warning))
+    print("Do you want to save results? [Y|n]")
+    # txt ? md ? csv ?
 
 
 def audit():
     print("")
     f = open('audit_list.json')
     audits = json.load(f)
+
+    ok = 0
+    nok = 0
 
     for audit in audits:
         id = audit["id"]
@@ -81,13 +112,18 @@ def audit():
 
         if expected in result:
             passed = True
+            ok += 1
             print(colored("[✓] " + title, success))
         else:
+            nok += 1
             print(colored("[X] " + title, warning))
         print("")
-        time.sleep(0.2)
+        time.sleep(0.05)
 
-    print(colored("Audit completed!", success))
+    input(colored("Audit completed! Press a key to display results", success))
+    clear()
+
+    display_audit_results(ok, nok)
 
 
 if __name__ == '__main__':
