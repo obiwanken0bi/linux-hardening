@@ -27,7 +27,7 @@ def dots(string, duration):
     while time.time() < t_end:
         sys.stdout.write( s )
         sys.stdout.flush()
-        time.sleep(0.025)
+        wait(0.025)
     print("")
 
 
@@ -46,10 +46,10 @@ def menu():
 
     user_input = input("Enter your choice: ")
 
-    if user_input == '1': clear(), print("\nNothing"), time.sleep(1), menu()
-    elif user_input == '2': clear(), audit(), time.sleep(1), menu()
-    elif user_input == '3': print("\nBye !"), time.sleep(1), exit()
-    else: print(colored("\nIncorrect input, please choose a valid number, asshole.", warning)), time.sleep(1), menu()
+    if user_input == '1': clear(), print("\nNothing for now"), wait(1), menu()
+    elif user_input == '2': clear(), audit(), wait(1), menu()
+    elif user_input == '3': print("\nBye !"), wait(1), exit()
+    else: print(colored("\nIncorrect input, please choose a valid number.", warning)), wait(1), menu()
 
 
 def exec_cmd(command):
@@ -69,30 +69,30 @@ def exec_cmd(command):
 def main():
     clear()
     obiwan()
-    time.sleep(1)
+    wait(1)
     menu()
 
 
 def save_to_txt(filename):
     print(colored("File saved in current directory.", success))
-    print("Name: " + filename + ".txt")
-    time.sleep(1)
+    print("Filename: " + filename + ".txt")
+    wait(1)
     menu()
 
 
 def save_to_csv(filename):
     print("TODO")
     print("File saved in txt for now.")
-    print("Name: " + filename + ".txt")
-    time.sleep(1)
+    print("Filename: " + filename + ".txt")
+    wait(1)
     menu()
 
 
 def save_to_pdf(filename):
     print("TODO")
     print("File saved in txt for now.")
-    print("Name: " + filename + ".txt")
-    time.sleep(1)
+    print("Filename: " + filename + ".txt")
+    wait(1)
     menu()
 
 
@@ -112,11 +112,11 @@ def save_results(filename):
 
     user_input = input("Enter your choice: ")
 
-    if user_input == '1': clear(), save_to_txt(filename), time.sleep(0.25), menu()
-    elif user_input == '2': clear(), save_to_csv(filename), time.sleep(0.25), menu()
-    elif user_input == '3': clear(), save_to_pdf(filename), time.sleep(0.25), menu()
-    elif user_input == '4': print("\nCancelled !"), time.sleep(0.25), os.remove(filename + ".txt")
-    else: print(colored("\nIncorrect input, please choose a valid number, asshole.", warning)), time.sleep(1), save_results()
+    if user_input == '1': clear(), save_to_txt(filename), wait(0.25), menu()
+    elif user_input == '2': clear(), save_to_csv(filename), wait(0.25), menu()
+    elif user_input == '3': clear(), save_to_pdf(filename), wait(0.25), menu()
+    elif user_input == '4': print("\nCancelled !"), wait(0.25), os.remove(filename + ".txt")
+    else: print(colored("\nIncorrect input, please choose a valid number.", warning)), wait(1), save_results()
 
 
 def display_audit_summary(ok, nok, filename):
@@ -131,7 +131,7 @@ def display_audit_summary(ok, nok, filename):
     (•ㅅ•) ||
     /     づ
     """)
-    time.sleep(0.5)
+    wait(0.5)
     print(colored("    Pass :    " + str(ok), success))
     print(colored("    Fail :    " + str(nok) + "\n", warning))
 
@@ -140,7 +140,7 @@ def display_audit_summary(ok, nok, filename):
         user_input = input("Do you want to save results to a file? [yes|no] ")
         if user_input.lower() == "yes":
             clear()
-            time.sleep(0.2)
+            wait(0.2)
             save_results(filename)
         elif user_input.lower() == "no":
             os.remove(filename + ".txt")
@@ -185,9 +185,9 @@ def audit():
                 print(colored("[✗] " + title, warning))
                 sf.write("/!\ [FAIL] " + cis + " - " + title + "\n")
             print("")
-            time.sleep(0.05)
+            wait(0.05)
 
-        input(colored("Audit completed! Press a key to display summary", success))
+        input(colored("Audit completed! Press any key to display summary", success))
         clear()
 
     sf.close()
@@ -200,7 +200,7 @@ if __name__ == '__main__':
         print("\nYou are using Python " + version)
         print(colored("\nPlease use Python 3 !\n", warning))
         print("Exiting...")
-        time.sleep(0.5)
+        wait(0.5)
         quit()
     else:
         main()
