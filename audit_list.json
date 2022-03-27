@@ -126,5 +126,53 @@
         "audit": "dpkg -s nis | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'nis' is not installed and no information is available",
         "remediation": ""
+    },
+    {
+        "id": 2201,
+        "cis": "2.2.1",
+        "title": "Ensure NIS Client is not installed",
+        "audit": "dpkg -s nis | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'nis' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2202,
+        "cis": "2.2.2",
+        "title": "Ensure rsh client is not installed",
+        "audit": "dpkg -s rsh-client | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'rsh-client' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2203,
+        "cis": "2.2.3",
+        "title": "Ensure talk client is not installed",
+        "audit": "dpkg -s talk | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'talk' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2204,
+        "cis": "2.2.4",
+        "title": "Ensure telnet client is not installed",
+        "audit": "dpkg -s telnet | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'telnet' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2205,
+        "cis": "2.2.5",
+        "title": "Ensure LDAP client is not installed",
+        "audit": "dpkg -s ldap-utils | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'ldap-utils' is not installed and no information is available",
+        "remediation": ""
+    },
+    {
+        "id": 2206,
+        "cis": "2.2.6",
+        "title": "Ensure RPC is not installed",
+        "audit": "dpkg -s rpcbind | grep -E '(Status:|not installed)'",
+        "expected": "dpkg-query: package 'rpcbind' is not installed and no information is available",
+        "remediation": ""
     }
 ]
