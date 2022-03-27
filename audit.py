@@ -4,6 +4,8 @@ import json
 from datetime import datetime
 from wsgiref.simple_server import sys_version
 from termcolor import colored
+from obiwan import obiwan
+
 
 default = 'white'
 success = 'green'
@@ -18,10 +20,10 @@ def wait(s):
     time.sleep(s)
 
 
-def dots(string):
+def dots(string, duration):
     s = '.'
     sys.stdout.write(string)
-    t_end = time.time() + 0.25
+    t_end = time.time() + duration
     while time.time() < t_end:
         sys.stdout.write( s )
         sys.stdout.flush()
@@ -44,7 +46,7 @@ def menu():
 
     user_input = input("Enter your choice: ")
 
-    if user_input == '1': print("\nRien"), time.sleep(1), menu()
+    if user_input == '1': clear(), print("\nNothing"), time.sleep(1), menu()
     elif user_input == '2': clear(), audit(), time.sleep(1), menu()
     elif user_input == '3': print("\nBye !"), time.sleep(1), exit()
     else: print(colored("\nIncorrect input, please choose a valid number, asshole.", warning)), time.sleep(1), menu()
@@ -66,8 +68,8 @@ def exec_cmd(command):
 
 def main():
     clear()
-    print("\nHello there!")
-    time.sleep(0.5)
+    obiwan()
+    time.sleep(1)
     menu()
 
 
@@ -110,10 +112,10 @@ def save_results(filename):
 
     user_input = input("Enter your choice: ")
 
-    if user_input == '1': clear(), save_to_txt(filename), time.sleep(1), menu()
-    elif user_input == '2': clear(), save_to_csv(filename), time.sleep(1), menu()
-    elif user_input == '3': clear(), save_to_pdf(filename), time.sleep(1), menu()
-    elif user_input == '4': print("\nCancelled !"), time.sleep(1), menu()
+    if user_input == '1': clear(), save_to_txt(filename), time.sleep(0.25), menu()
+    elif user_input == '2': clear(), save_to_csv(filename), time.sleep(0.25), menu()
+    elif user_input == '3': clear(), save_to_pdf(filename), time.sleep(0.25), menu()
+    elif user_input == '4': print("\nCancelled !"), time.sleep(0.25), os.remove(filename + ".txt")
     else: print(colored("\nIncorrect input, please choose a valid number, asshole.", warning)), time.sleep(1), save_results()
 
 
@@ -138,12 +140,11 @@ def display_audit_summary(ok, nok, filename):
         user_input = input("Do you want to save results to a file? [yes|no] ")
         if user_input.lower() == "yes":
             clear()
-            time.sleep(0.5)
+            time.sleep(0.2)
             save_results(filename)
         elif user_input.lower() == "no":
             os.remove(filename + ".txt")
-            dots("Returning to menu")
-            # time.sleep(0.5)
+            dots("Returning to menu", 0.25)
             menu()
         else:
         	print(colored("Please enter 'yes' or 'no', is that so difficult?\n", warning))
@@ -170,7 +171,7 @@ def audit():
             fix_cmd = audit["remediation"]
             passed = False
 
-            dots("Auditing CIS: " + cis)
+            dots("Auditing CIS: " + cis, 0.25)
 
             result = exec_cmd(audit_cmd)
 
