@@ -157,7 +157,7 @@
         "title": "Ensure telnet client is not installed",
         "audit": "dpkg -s telnet | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'telnet' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "apt purge telnet"
     },
     {
         "id": 2205,

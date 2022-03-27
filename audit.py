@@ -74,8 +74,50 @@ def main():
 
 
 def fix_all(fails):
-    print("TODO")
-    print("Fails: " + str(fails))
+    f = open('audit_list.json')
+    audits = json.load(f)
+
+    remaining_fails = fails
+
+    for fail_id in fails:
+        # print("\nId: " + str(fail_id))
+        for entry in audits:
+            if entry['id'] == fail_id:
+                print("\nVulnerability: " + entry['title'])
+                print("Remediation command: " + entry['remediation'])
+                # fix_result = exec_cmd(entry['remediation'])   # UNCOMMENT THIS ONLY IN A VM
+                wait(0.25)
+                dots("Checking if remediation worked", 0.5)
+
+                check_result = exec_cmd(entry['audit'])
+                if entry['expected'] in check_result:
+                    remaining_fails.remove(fail_id)
+                    print(colored("[✓] Vuln fixed - " + entry['title'], success))
+                else:
+                    print(colored("[✗] Remediation didn't work - " + entry['title'], warning))
+    
+    f.close()
+    wait(0.5)
+
+    print("""
+     _______________________
+    |                       |
+    |  Remediation summary  |
+    |_______________________|
+    """)
+    wait(0.25)
+    if len(remaining_fails) == 0:
+        print(colored("Remediation completed!", success))
+    else:
+        print(colored("Some remediation attempt(s) failed: " + str(remaining_fails), warning))
+
+    # TODO
+    # success_fixes = set(fails) ^ set(remaining_fails)
+    # print(colored("Successfully fixed: " + success_fixes, success))
+    
+    input("\nPress any key to return to menu")
+    clear()
+    menu()
 
 
 def fix_one_by_one(fails):
