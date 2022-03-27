@@ -1,6 +1,7 @@
 import os, sys, time
 import subprocess
 import json
+from datetime import datetime
 from wsgiref.simple_server import sys_version
 from termcolor import colored
 
@@ -70,12 +71,58 @@ def main():
     menu()
 
 
-def display_audit_results(ok, nok):
+def save_to_txt(filename):
+    print(colored("File saved in current directory.", success))
+    print("Name: " + filename + ".txt")
+    time.sleep(1)
+    menu()
+
+
+def save_to_csv(filename):
+    print("TODO")
+    print("File saved in txt for now.")
+    print("Name: " + filename + ".txt")
+    time.sleep(1)
+    menu()
+
+
+def save_to_pdf(filename):
+    print("TODO")
+    print("File saved in txt for now.")
+    print("Name: " + filename + ".txt")
+    time.sleep(1)
+    menu()
+
+
+def save_results(filename):
+    print("""
+        __________________________________________
+        |                                        |
+        |              SAVE RESULTS              |
+        |                                        |
+        |         1. Save to txt file            |
+        |         2. Save to csv file            |
+        |         3. Save to pdf file            |
+        |         4. Cancel                      |
+        |                                        |
+        |________________________________________|
+    """)
+
+    user_input = input("Enter your choice: ")
+
+    if user_input == '1': clear(), save_to_txt(filename), time.sleep(1), menu()
+    elif user_input == '2': clear(), save_to_csv(filename), time.sleep(1), menu()
+    elif user_input == '3': clear(), save_to_pdf(filename), time.sleep(1), menu()
+    elif user_input == '4': print("\nCancelled !"), time.sleep(1), menu()
+    else: print(colored("\nIncorrect input, please choose a valid number, asshole.", warning)), time.sleep(1), save_results()
+
+
+def display_audit_summary(ok, nok, filename):
     print("""
          ___________
         |           |
         |   Audit   |
-        |  results  |
+        |  summary  |
         |___________|
            ||
     (\__/) ||
@@ -85,8 +132,21 @@ def display_audit_results(ok, nok):
     time.sleep(0.5)
     print(colored("    Pass :    " + str(ok), success))
     print(colored("    Fail :    " + str(nok) + "\n", warning))
-    print("Do you want to save results? [Y|n]")
-    # txt ? md ? csv ?
+
+    user_input = ""
+    while user_input.lower() not in ("yes", "no"):
+        user_input = input("Do you want to save results to a file? [yes|no] ")
+        if user_input.lower() == "yes":
+            clear()
+            time.sleep(0.5)
+            save_results(filename)
+        elif user_input.lower() == "no":
+            os.remove(filename + ".txt")
+            dots("Returning to menu")
+            # time.sleep(0.5)
+            menu()
+        else:
+        	print(colored("Please enter 'yes' or 'no', is that so difficult?\n", warning))
 
 
 def audit():
@@ -97,33 +157,40 @@ def audit():
     ok = 0
     nok = 0
 
-    for audit in audits:
-        id = audit["id"]
-        cis = audit["cis"]
-        title = audit["title"]
-        audit_cmd = audit["audit"]
-        expected = audit["expected"]
-        fix_cmd = audit["remediation"]
-        passed = False
+    filename = "audit_summary_" + datetime.today().strftime('%Y-%m-%d-%H%M%S')
 
-        dots("Auditing CIS: " + cis)
+    with open(filename + ".txt", 'w') as sf:
 
-        result = exec_cmd(audit_cmd)
+        for audit in audits:
+            id = audit["id"]
+            cis = audit["cis"]
+            title = audit["title"]
+            audit_cmd = audit["audit"]
+            expected = audit["expected"]
+            fix_cmd = audit["remediation"]
+            passed = False
 
-        if expected in result:
-            passed = True
-            ok += 1
-            print(colored("[✓] " + title, success))
-        else:
-            nok += 1
-            print(colored("[X] " + title, warning))
-        print("")
-        time.sleep(0.05)
+            dots("Auditing CIS: " + cis)
 
-    input(colored("Audit completed! Press a key to display results", success))
-    clear()
+            result = exec_cmd(audit_cmd)
 
-    display_audit_results(ok, nok)
+            if expected in result:
+                passed = True
+                ok += 1
+                print(colored("[✓] " + title, success))
+                sf.write("    [PASS] " + cis + " - " + title + "\n")
+            else:
+                nok += 1
+                print(colored("[✗] " + title, warning))
+                sf.write("/!\ [FAIL] " + cis + " - " + title + "\n")
+            print("")
+            time.sleep(0.05)
+
+        input(colored("Audit completed! Press a key to display summary", success))
+        clear()
+
+    sf.close()
+    display_audit_summary(ok, nok, filename)
 
 
 if __name__ == '__main__':
