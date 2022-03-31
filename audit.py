@@ -84,17 +84,20 @@ def fix_all(fails):
         for entry in audits:
             if entry['id'] == fail_id:
                 print("\nVulnerability: " + entry['title'])
-                print("Remediation command: " + entry['remediation'])
-                # fix_result = exec_cmd(entry['remediation'])   # UNCOMMENT THIS ONLY IN A VM
-                wait(0.25)
-                dots("Checking if remediation worked", 0.5)
+                if (entry['remediation'] != ""):
+                    print("Remediation command: " + entry['remediation'])
+                    # fix_result = exec_cmd(entry['remediation'] + " -y")   # UNCOMMENT THIS ONLY IN A VM
+                    wait(0.25)
+                    dots("Checking if remediation worked", 0.5)
 
-                check_result = exec_cmd(entry['audit'])
-                if entry['expected'] in check_result:
-                    remaining_fails.remove(fail_id)
-                    print(colored("[✓] Vuln fixed - " + entry['title'], success))
+                    check_result = exec_cmd(entry['audit'])
+                    if entry['expected'] in check_result:
+                        remaining_fails.remove(fail_id)
+                        print(colored("[✓] Vuln fixed - " + entry['title'], success))
+                    else:
+                        print(colored("[✗] Remediation didn't work - " + entry['title'], warning))
                 else:
-                    print(colored("[✗] Remediation didn't work - " + entry['title'], warning))
+                    print(colored("[✗] No remediation found - " + entry['title'], warning))
     
     f.close()
     wait(0.5)
@@ -129,7 +132,6 @@ def remediation(fails):
     if len(fails) == 0:
         menu()
     else:
-        clear()
         print("\n" + str(len(fails)) + " vulnerabilies found by audit.")
         print("""
 __________________________________________
@@ -138,7 +140,7 @@ __________________________________________
 |                                        |
 |       1. Fix all vulnerabilities       |
 |       2. Fix one by one                |
-|       3. Cancel                        |
+|       3. Do nothing                    |
 |                                        |
 |________________________________________|
         """)
@@ -147,7 +149,7 @@ __________________________________________
 
         if user_input == '1': clear(), fix_all(fails)
         elif user_input == '2': clear(), fix_one_by_one(fails)
-        elif user_input == '3': print("\nCancelled ! Returning to menu..."), wait(0.25), menu()
+        elif user_input == '3': print("\nReturning to menu..."), wait(0.25), menu()
         else: print(colored("\nIncorrect input, please choose a valid number.", warning)), wait(1), remediation(fails)
 
 

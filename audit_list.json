@@ -13,7 +13,7 @@
         "title": "Ensure Avahi Server is not installed",
         "audit": "dpkg -s avahi-daemon | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'avahi-daemon' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo systemctl stop avahi-daaemon.service && systemctl stop avahi-daemon.socket && apt purge avahi-daemon"
     },
     {
         "id": 2104,
@@ -21,7 +21,7 @@
         "title": "Ensure CUPS is not installed",
         "audit": "dpkg -s cups | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'cups' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge cups"
     },
     {
         "id": 2105,
@@ -29,7 +29,7 @@
         "title": "Ensure DHCP Server is not installed",
         "audit": "dpkg -s isc-dhcp-server | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'isc-dhcp-server' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge isc-dhcp-server"
     },
     {
         "id": 2106,
@@ -37,7 +37,7 @@
         "title": "Ensure LDAP Server is not installed",
         "audit": "dpkg -s slapd | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'slapd' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge slapd"
     },
     {
         "id": 2107,
@@ -45,7 +45,7 @@
         "title": "Ensure NFS is not installed",
         "audit": "dpkg -s nfs-kernel-server | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'nfs-kernel-server' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge nfs-kernel-server"
     },
     {
         "id": 2108,
@@ -53,7 +53,7 @@
         "title": "Ensure DNS Server is not installed",
         "audit": "dpkg -s bind9 | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'bind9' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge bind9"
     },
     {
         "id": 2109,
@@ -61,7 +61,7 @@
         "title": "Ensure FTP Server is not installed",
         "audit": "dpkg -s vsftpd | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'vsftpd' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge vsftpd"
     },
     {
         "id": 2110,
@@ -69,7 +69,7 @@
         "title": "Ensure HTTP server is not installed",
         "audit": "dpkg -s apache2 | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'apache2' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge apache2"
     },
     {
         "id": 2111,
@@ -77,7 +77,7 @@
         "title": "Ensure IMAP and POP3 server are not installed",
         "audit": "dpkg -s dovecot-imapd dovecot-pop3d | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'dovecot-imapd' is not installed and no information is available\ndpkg-query: package 'dovecot-pop3d' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge dovecot-imapd dovecot-pop3d"
     },
     {
         "id": 2112,
@@ -85,7 +85,7 @@
         "title": "Ensure Samba is not installed",
         "audit": "dpkg -s samba | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'samba' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge samba"
     },
     {
         "id": 2113,
@@ -93,7 +93,7 @@
         "title": "Ensure HTTP Proxy Server is not installed",
         "audit": "dpkg -s squid | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'squid' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge squid"
     },
     {
         "id": 2114,
@@ -101,7 +101,7 @@
         "title": "Ensure SNMP Server is not installed",
         "audit": "dpkg -s snmpd | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'snmpd' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge snmpd"
     },
     {
         "id": 2115,
@@ -117,7 +117,7 @@
         "title": "Ensure rsync service is not installed",
         "audit": "dpkg -s rsync | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'rsync' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge rsync"
     },
     {
         "id": 2117,
@@ -125,7 +125,7 @@
         "title": "Ensure NIS Server is not installed",
         "audit": "dpkg -s nis | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'nis' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge nis"
     },
     {
         "id": 2201,
@@ -133,7 +133,7 @@
         "title": "Ensure NIS Client is not installed",
         "audit": "dpkg -s nis | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'nis' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge nis"
     },
     {
         "id": 2202,
@@ -141,7 +141,7 @@
         "title": "Ensure rsh client is not installed",
         "audit": "dpkg -s rsh-client | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'rsh-client' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge rsh-client"
     },
     {
         "id": 2203,
@@ -149,7 +149,7 @@
         "title": "Ensure talk client is not installed",
         "audit": "dpkg -s talk | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'talk' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge talk"
     },
     {
         "id": 2204,
@@ -157,7 +157,7 @@
         "title": "Ensure telnet client is not installed",
         "audit": "dpkg -s telnet | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'telnet' is not installed and no information is available",
-        "remediation": "apt purge telnet"
+        "remediation": "sudo apt purge telnet"
     },
     {
         "id": 2205,
@@ -165,7 +165,7 @@
         "title": "Ensure LDAP client is not installed",
         "audit": "dpkg -s ldap-utils | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'ldap-utils' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge ldap-utils"
     },
     {
         "id": 2206,
@@ -173,6 +173,6 @@
         "title": "Ensure RPC is not installed",
         "audit": "dpkg -s rpcbind | grep -E '(Status:|not installed)'",
         "expected": "dpkg-query: package 'rpcbind' is not installed and no information is available",
-        "remediation": ""
+        "remediation": "sudo apt purge rpcbind"
     }
 ]
