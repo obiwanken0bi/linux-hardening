@@ -48,7 +48,7 @@ __________________________________________
 
     if user_input == '1': clear(), print("\nNothing for now"), wait(1), menu()
     elif user_input == '2': clear(), audit(), wait(1), menu()
-    elif user_input == '3': print("\nBye !"), wait(1), exit()
+    elif user_input == '3': print("\nBye !\n"), wait(1), exit()
     else: print(colored("\nIncorrect input, please choose a valid number.", warning)), wait(1), menu()
 
 
@@ -85,7 +85,6 @@ def fix_all(fails):
             if entry['id'] == fail_id:
                 print("\nVulnerability: " + entry['title'])
                 if (entry['remediation'] != ""):
-                    print("Remediation command: " + entry['remediation'])
                     # fix_result = exec_cmd(entry['remediation'] + " -y")   # UNCOMMENT THIS ONLY IN A VM
                     wait(0.25)
                     dots("Checking if remediation worked", 0.5)
@@ -112,12 +111,18 @@ def fix_all(fails):
     if len(remaining_fails) == 0:
         print(colored("Remediation completed!", success))
     else:
-        print(colored("Some remediation attempt(s) failed: " + str(remaining_fails), warning))
+        print(colored("Some remediation attempt(s) failed: ", warning))
+        for fail_id in remaining_fails:
+            for entry in audits:
+                if entry['id'] == fail_id:
+                    print("[CIS ", entry['cis'], "] ", entry['title'])
+                    break
 
-    # TODO
-    # success_fixes = set(fails) ^ set(remaining_fails)
-    # print(colored("Successfully fixed: " + success_fixes, success))
-    
+    # TO CHECK
+    success_fixes = list(set(fails) - set(remaining_fails))
+    if success_fixes:
+        print(colored("\nSuccessfully fixed: " + str(success_fixes), success))
+
     input("\nPress any key to return to menu")
     clear()
     menu()
@@ -240,9 +245,11 @@ def audit():
 
     fails = []
 
-    filename = "audit_summary_" + datetime.today().strftime('%Y-%m-%d-%H%M%S')
+    audit_date = datetime.today().strftime('%Y-%m-%d-%H%M%S')
+    filename = "audit_summary_" + audit_date
 
     with open(filename + ".txt", 'w') as sf:
+        sf.write("Auditing date: " + audit_date + "\n\n\n")
 
         for audit in audits:
             id = audit["id"]
