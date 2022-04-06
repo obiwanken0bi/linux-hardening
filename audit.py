@@ -9,6 +9,7 @@ from obiwan import obiwan
 
 default = 'white'
 success = 'green'
+info = 'yellow'
 warning = 'red'
 
 
@@ -49,7 +50,7 @@ __________________________________________
     if user_input == '1': clear(), print("\nNothing for now"), wait(1), menu()
     elif user_input == '2': clear(), audit(), wait(1), menu()
     elif user_input == '3': print("\nBye !\n"), wait(1), exit()
-    else: print(colored("\nIncorrect input, please choose a valid number.", warning)), wait(1), menu()
+    else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), menu()
 
 
 def exec_cmd(command):
@@ -73,34 +74,7 @@ def main():
     menu()
 
 
-def fix_all(fails):
-    f = open('audit_list.json')
-    audits = json.load(f)
-
-    remaining_fails = fails
-
-    for fail_id in fails:
-        # print("\nId: " + str(fail_id))
-        for entry in audits:
-            if entry['id'] == fail_id:
-                print("\nVulnerability: " + entry['title'])
-                if (entry['remediation'] != ""):
-                    # fix_result = exec_cmd(entry['remediation'] + " -y")   # UNCOMMENT THIS ONLY IN A VM
-                    wait(0.25)
-                    dots("Checking if remediation worked", 0.5)
-
-                    check_result = exec_cmd(entry['audit'])
-                    if entry['expected'] in check_result:
-                        remaining_fails.remove(fail_id)
-                        print(colored("[✓] Vuln fixed - " + entry['title'], success))
-                    else:
-                        print(colored("[✗] Remediation didn't work - " + entry['title'], warning))
-                else:
-                    print(colored("[✗] No remediation found - " + entry['title'], warning))
-    
-    f.close()
-    wait(0.5)
-
+def remediation_summary(fails, remaining_fails, audits):
     print("""
      _______________________
     |                       |
@@ -118,7 +92,6 @@ def fix_all(fails):
                     print("[CIS ", entry['cis'], "] ", entry['title'])
                     break
 
-    # TO CHECK
     success_fixes = list(set(fails) - set(remaining_fails))
     if success_fixes:
         print(colored("\nSuccessfully fixed: " + str(success_fixes), success))
@@ -128,9 +101,74 @@ def fix_all(fails):
     menu()
 
 
+def fix_all(fails):
+    f = open('audit_list.json')
+    audits = json.load(f)
+
+    remaining_fails = fails
+
+    for fail_id in fails:
+        for entry in audits:
+            if entry['id'] == fail_id:
+                print("\nVulnerability: " + entry['title'])
+                if (entry['remediation'] != ""):
+                    # fix_result = exec_cmd(entry['remediation'] + " -y")   # UNCOMMENT THIS ONLY IN A VM
+                    wait(0.2)
+                    dots("Checking if remediation worked", 0.25)
+
+                    check_result = exec_cmd(entry['audit'])
+                    if entry['expected'] in check_result:
+                        remaining_fails.remove(fail_id)
+                        print(colored("[✓] Vuln fixed - " + entry['title'], success))
+                    else:
+                        print(colored("[✗] Remediation didn't work - " + entry['title'], warning))
+                else:
+                    print(colored("[✗] No remediation found - " + entry['title'], info))
+    
+    f.close()
+    wait(0.5)
+    remediation_summary(fails, remaining_fails, audits)
+
+
 def fix_one_by_one(fails):
-    print("TODO")
-    print("Fails: " + str(fails))
+    print("In progress...")
+    wait(0.25)
+
+    # print("Fails: " + str(fails))
+    f = open('audit_list.json')
+    audits = json.load(f)
+
+    remaining_fails = fails
+
+    for fail_id in fails:
+        for entry in audits:
+            if entry['id'] == fail_id:
+                print("\nVulnerability: " + entry['title'])
+                if (entry['remediation'] != ""):
+                    user_input = ""
+                    while user_input.lower() not in ("yes", "no"):
+                        user_input = input("Do you want to fix this vulnerability? [yes|no] ")
+                        if user_input.lower() == "yes":
+                            wait(0.2)
+                            # fix_result = exec_cmd(entry['remediation'] + " -y")   # UNCOMMENT THIS ONLY IN A VM
+                            dots("Checking if remediation worked", 0.25)
+                            check_result = exec_cmd(entry['audit'])
+                            if entry['expected'] in check_result:
+                                remaining_fails.remove(fail_id)
+                                print(colored("[✓] Vuln fixed - " + entry['title'], success))
+                            else:
+                                print(colored("[✗] Remediation didn't work - " + entry['title'], warning))
+                        elif user_input.lower() == "no":
+                            wait(0.2)
+                            print(colored("[✗] Remediation refused by user - " + entry['title'], info))
+                            break
+                        else:
+                            print(colored("Please enter 'yes' or 'no', is that so difficult?\n", info))
+                else:
+                    print(colored("[✗] No remediation found - " + entry['title'], info))
+    f.close()
+    wait(0.5)
+    remediation_summary(fails, remaining_fails, audits)
 
 
 def remediation(fails):
@@ -155,7 +193,7 @@ __________________________________________
         if user_input == '1': clear(), fix_all(fails)
         elif user_input == '2': clear(), fix_one_by_one(fails)
         elif user_input == '3': print("\nReturning to menu..."), wait(0.25), menu()
-        else: print(colored("\nIncorrect input, please choose a valid number.", warning)), wait(1), remediation(fails)
+        else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), remediation(fails)
 
 
 def save_to_txt(filename, fails):
@@ -201,7 +239,7 @@ __________________________________________
     elif user_input == '2': clear(), save_to_csv(filename, fails)
     elif user_input == '3': clear(), save_to_pdf(filename, fails)
     elif user_input == '4': print("\nCancelled !"), wait(0.25), os.remove(filename + ".txt"), remediation(fails)
-    else: print(colored("\nIncorrect input, please choose a valid number.", warning)), wait(1), save_results(filename, fails)
+    else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), save_results(filename, fails)
 
 
 def display_audit_summary(ok, nok, filename, fails):
@@ -232,7 +270,7 @@ def display_audit_summary(ok, nok, filename, fails):
             wait(0.25)
             remediation(fails)
         else:
-        	print(colored("Please enter 'yes' or 'no', is that so difficult?\n", warning))
+        	print(colored("Please enter 'yes' or 'no', is that so difficult?\n", info))
 
 
 def audit():
@@ -249,7 +287,7 @@ def audit():
     filename = "audit_summary_" + audit_date
 
     with open(filename + ".txt", 'w') as sf:
-        sf.write("Auditing date: " + audit_date + "\n\n\n")
+        sf.write("Audit date: " + audit_date + "\n\n\n")
 
         for audit in audits:
             id = audit["id"]
@@ -260,7 +298,7 @@ def audit():
             fix_cmd = audit["remediation"]
             passed = False
 
-            dots("Auditing CIS: " + cis, 0.20)
+            dots("Auditing CIS: " + cis, 0.2)
 
             result = exec_cmd(audit_cmd)
 
