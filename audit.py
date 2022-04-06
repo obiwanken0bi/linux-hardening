@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 from wsgiref.simple_server import sys_version
 from termcolor import colored
+from mdutils.mdutils import MdUtils
 from obiwan import obiwan
 
 
@@ -134,7 +135,6 @@ def fix_one_by_one(fails):
     print("In progress...")
     wait(0.25)
 
-    # print("Fails: " + str(fails))
     f = open('audit_list.json')
     audits = json.load(f)
 
@@ -203,6 +203,16 @@ def save_to_txt(filename, fails):
     remediation(fails)
 
 
+def save_to_md(filename, fails):
+    print("In progress...")
+    print("File saved in txt for now.")
+    mdFile = MdUtils(file_name=filename, title='Audit report')
+    # code
+    mdFile.create_md_file()
+    wait(0.5)
+    remediation(fails)
+
+
 def save_to_csv(filename, fails):
     print("TODO")
     print("File saved in txt for now.")
@@ -226,9 +236,10 @@ __________________________________________
 |              SAVE RESULTS              |
 |                                        |
 |         1. Save to txt file            |
-|         2. Save to csv file            |
-|         3. Save to pdf file            |
-|         4. Cancel                      |
+|         2. Save to md file             |
+|         3. Save to csv file            |
+|         4. Save to pdf file            |
+|         5. Cancel                      |
 |                                        |
 |________________________________________|
     """)
@@ -236,9 +247,10 @@ __________________________________________
     user_input = input("Enter your choice: ")
 
     if user_input == '1': clear(), save_to_txt(filename, fails)
-    elif user_input == '2': clear(), save_to_csv(filename, fails)
-    elif user_input == '3': clear(), save_to_pdf(filename, fails)
-    elif user_input == '4': print("\nCancelled !"), wait(0.25), os.remove(filename + ".txt"), remediation(fails)
+    elif user_input == '2': clear(), save_to_md(filename, fails)
+    elif user_input == '3': clear(), save_to_csv(filename, fails)
+    elif user_input == '4': clear(), save_to_pdf(filename, fails)
+    elif user_input == '5': print("\nCancelled !"), wait(0.25), os.remove(filename + ".txt"), remediation(fails)
     else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), save_results(filename, fails)
 
 
