@@ -290,6 +290,9 @@ def audit():
     f = open('audit_list.json')
     audits = json.load(f)
 
+    nb_audits = len(audits)
+    print("Nombre de règles: " + str(nb_audits) + "\n")
+
     ok = 0
     nok = 0
 
@@ -300,6 +303,7 @@ def audit():
 
     with open(filename + ".txt", 'w') as sf:
         sf.write("Audit date: " + audit_date + "\n\n\n")
+        remaining_audits = nb_audits
 
         for audit in audits:
             id = audit["id"]
@@ -324,7 +328,8 @@ def audit():
                 print(colored("[✗] " + title, warning))
                 sf.write("/!\ [FAIL] " + cis + " - " + title + "\n")
                 fails.append(id)
-            print("")
+            remaining_audits -= 1
+            print("Remaining audits :" + str(remaining_audits) + "\n")
             wait(0.05)
 
         input(colored("Audit completed! Press any key to display summary", success))
@@ -335,12 +340,16 @@ def audit():
 
 
 if __name__ == '__main__':
-    if sys.version_info[0] < 3:
-        version = ".".join(map(str, sys.version_info[:3]))
-        print("\nYou are using Python " + version)
-        print(colored("\nPlease use Python 3 !\n", warning))
-        print("Exiting...")
-        wait(0.5)
-        quit()
-    else:
-        main()
+    try:
+        if sys.version_info[0] < 3:
+            version = ".".join(map(str, sys.version_info[:3]))
+            print("\nYou are using Python " + version)
+            print(colored("\nPlease use Python 3 !\n", warning))
+            print("Exiting...")
+            wait(0.5)
+            quit()
+        else:
+            main()
+    except KeyboardInterrupt:
+        print("\n\nInterrupted by user... Yes, you.")
+
