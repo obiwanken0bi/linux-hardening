@@ -224,11 +224,30 @@ def save_to_txt(fails, audit_report):
 
 
 def save_to_md(fails, audit_report):
-    print("In progress...")
-    print("File saved in txt for now.")
-    # mdFile = MdUtils(file_name=filename, title='Audit report')
-    # code
-    # mdFile.create_md_file()
+    filename = "audit_report_" + str(audit_report[0])
+    mdFile = MdUtils(file_name=filename, title='Audit report')
+    # date = datetime.strptime(audit_report[0], '%d-%m-%Y %H:%M:%S')
+    mdFile.new_paragraph("Audit date : " + str(audit_report[0]))
+    audit_report.pop(0)
+    
+    for rule_report in audit_report:
+        if rule_report[6] == True:
+            mdFile.new_paragraph("[PASS] " + str(rule_report[1]) + " - " + str(rule_report[2]), color='green')
+        else:
+            mdFile.new_paragraph("[FAIL] " + str(rule_report[1]) + " - " + str(rule_report[2]), color='red')
+
+    list_of_strings = ["CIS", "Rule", "Passed"]
+    for rule_report in audit_report:
+        if rule_report[6] == True:
+            list_of_strings.extend([str(rule_report[1]), str(rule_report[2]), "**<font color='green'>Yes</font>**"])
+        else:
+            list_of_strings.extend([str(rule_report[1]), str(rule_report[2]), "**<font color='red'>No</font>**"])
+    mdFile.new_line()
+    mdFile.new_table(columns=3, rows=len(audit_report)+1, text=list_of_strings, text_align='left')
+    
+    mdFile.create_md_file()
+    print("Filename: " + filename + ".md")
+    print(colored("File saved in current directory.", success))
     wait(0.5)
     remediation(fails)
 
@@ -236,7 +255,7 @@ def save_to_md(fails, audit_report):
 def save_to_csv(fails, audit_report):
     print("TODO")
     print("File saved in txt for now.")
-    # print("Filename: " + filename + ".txt")
+    # print("Filename: " + filename + ".csv")
     wait(0.5)
     remediation(fails)
 
@@ -244,7 +263,7 @@ def save_to_csv(fails, audit_report):
 def save_to_pdf(fails, audit_report):
     print("TODO")
     print("File saved in txt for now.")
-    # print("Filename: " + filename + ".txt")
+    # print("Filename: " + filename + ".pdf")
     wait(0.5)
     remediation(fails)
 
@@ -298,7 +317,6 @@ def display_audit_summary(ok, nok, fails, audit_report):
             wait(0.2)
             save_results(fails, audit_report)
         elif user_input.lower() == "no":
-            # os.remove(filename + ".txt")
             wait(0.25)
             remediation(fails)
         else:
@@ -320,47 +338,6 @@ def audit():
     audit_report = []
 
     audit_date = datetime.today().strftime('%Y-%m-%d-%H%M%S')
-    # filename = "audit_summary_" + audit_date
-
-    # with open(filename + ".txt", 'w') as sf:
-    #     sf.write("Audit date: " + audit_date + "\n\n\n")
-    #     remaining_audits = nb_audits
-
-    #     for audit in audits:
-    #         id = audit["id"]
-    #         cis = audit["cis"]
-    #         title = audit["title"]
-    #         audit_cmd = audit["audit"]
-    #         expected = audit["expected"]
-    #         fix_cmd = audit["remediation"]
-    #         passed = False
-
-    #         dots("Auditing CIS: " + cis, 0.2)
-
-    #         result = exec_cmd(audit_cmd)
-
-    #         if expected in result:
-    #             passed = True
-    #             ok += 1
-    #             print(colored("[✓] " + title, success))
-    #             sf.write("    [PASS] " + cis + " - " + title + "\n")
-    #         else:
-    #             nok += 1
-    #             print(colored("[✗] " + title, warning))
-    #             sf.write("/!\ [FAIL] " + cis + " - " + title + "\n")
-    #             fails.append(id)
-    #         remaining_audits -= 1
-    #         print("Remaining audits :" + str(remaining_audits) + "\n")
-    #         wait(0.05)
-
-    #     input(colored("Audit completed! Press any key to display summary", success))
-    #     clear()
-
-    # sf.close()
-    # display_audit_summary(ok, nok, filename, fails)
-
-    # ##############################################
-
     audit_report.append(audit_date)
     remaining_audits = nb_audits
 
@@ -373,7 +350,7 @@ def audit():
         fix_cmd = audit["remediation"]
         passed = False
 
-        dots("Auditing CIS: " + cis, 0.2)
+        dots("Auditing CIS: " + cis, 0.1)
 
         result = exec_cmd(audit_cmd)
 
@@ -395,8 +372,6 @@ def audit():
     clear()
     display_audit_summary(ok, nok, fails, audit_report)
 
-    # ##############################################
-
 
 if __name__ == '__main__':
     try:
@@ -411,4 +386,3 @@ if __name__ == '__main__':
             main()
     except KeyboardInterrupt:
         print("\n\nInterrupted by user... Yes, you.")
-
