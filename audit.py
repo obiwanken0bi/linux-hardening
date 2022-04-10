@@ -1,6 +1,7 @@
 import os, sys, time
 import subprocess
 import json
+import csv
 from datetime import datetime
 from wsgiref.simple_server import sys_version
 from termcolor import colored
@@ -253,9 +254,18 @@ def save_to_md(fails, audit_report):
 
 
 def save_to_csv(fails, audit_report):
-    print("TODO")
-    print("File saved in txt for now.")
-    # print("Filename: " + filename + ".csv")
+    filename = "audit_report_" + str(audit_report[0])
+    audit_report.pop(0)
+
+    with open(filename + '.csv', mode='w') as csv_file:
+        fieldnames = ['cis', 'title', 'passed']
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        for rule_report in audit_report:
+            writer.writerow({'cis': str(rule_report[1]), 'title': str(rule_report[2]), 'passed': str(rule_report[6])})
+
+    print("Filename: " + filename + ".csv")
+    print(colored("File saved in current directory.", success))
     wait(0.5)
     remediation(fails)
 
