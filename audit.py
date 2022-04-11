@@ -34,6 +34,13 @@ def dots(string, duration):
     print("")
 
 
+def delay_print(string, duration):
+    for char in string:
+        sys.stdout.write(char)
+        sys.stdout.flush()
+        time.sleep(duration)
+
+
 def menu():
     print("""
 __________________________________________
@@ -360,22 +367,23 @@ def audit():
         fix_cmd = audit["remediation"]
         passed = False
 
-        dots("Auditing CIS: " + cis, 0.1)
+        # dots("Auditing CIS: " + cis, 0.1)
+        delay_print("Auditing CIS: " + cis + "...\n", 0.005)
 
         result = exec_cmd(audit_cmd)
 
         if expected in result:
             passed = True
             ok += 1
-            print(colored("[✓] " + title, success))
+            print(colored("[✓] " + title + "\n", success))
         else:
             nok += 1
-            print(colored("[✗] " + title, warning))
+            print(colored("[✗] " + title + "\n", warning))
             fails.append(id)
         remaining_audits -= 1
         rule_report = [id, cis, title, audit_cmd, expected, fix_cmd, passed]
         audit_report.append(rule_report)
-        print("Remaining rules to audit :" + str(remaining_audits) + "\n")
+        # print("Remaining rules to audit :" + str(remaining_audits) + "\n")
         wait(0.05)
 
     input(colored("Audit completed! Press any key to display summary", success))
