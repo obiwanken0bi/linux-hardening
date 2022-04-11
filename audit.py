@@ -154,9 +154,9 @@ def fix_one_by_one(fails):
                 print("\nVulnerability: " + entry['title'])
                 if (entry['remediation'] != ""):
                     user_input = ""
-                    while user_input.lower() not in ("yes", "no"):
-                        user_input = input("Do you want to fix this vulnerability? [yes|no] ")
-                        if user_input.lower() == "yes":
+                    while user_input.lower() not in ("y", "n"):
+                        user_input = input("Do you want to fix this vulnerability? [y|n] ")
+                        if user_input.lower() == "y":
                             wait(0.2)
                             # fix_result = exec_cmd(entry['remediation'] + " -y")   # UNCOMMENT THIS ONLY IN A VM
                             dots("Checking if remediation worked", 0.25)
@@ -166,12 +166,12 @@ def fix_one_by_one(fails):
                                 print(colored("[✓] Vuln fixed - " + entry['title'], success))
                             else:
                                 print(colored("[✗] Remediation didn't work - " + entry['title'], warning))
-                        elif user_input.lower() == "no":
+                        elif user_input.lower() == "n":
                             wait(0.2)
                             print(colored("[✗] Remediation refused by user - " + entry['title'], info))
                             break
                         else:
-                            print(colored("Please enter 'yes' or 'no', is that so difficult?\n", info))
+                            print(colored("Please enter 'y' or 'n', is that so difficult?\n", info))
                 else:
                     print(colored("[✗] No remediation found - " + entry['title'], info))
     f.close()
@@ -212,11 +212,12 @@ __________________________________________
 #                ]
 # rule_report = [id, cis, title, audit_cmd, expected, fix_cmd, passed]
 
-def save_to_txt(fails, audit_report):
-    filename = "audit_report_" + str(audit_report[0])
+def save_to_txt(fails, audit_report, all):
+    audit_date = audit_report[0]
+    filename = "audit_report_" + str(audit_date)
     
     with open(filename + ".txt", 'w') as sf:
-        sf.write("Audit date: " + str(audit_report[0]) + "\n\n")
+        sf.write("Audit date: " + str(audit_date) + "\n\n")
         audit_report.pop(0)
         for rule_report in audit_report:
             if rule_report[6] == True:
@@ -225,17 +226,20 @@ def save_to_txt(fails, audit_report):
                 sf.write("/!\ [FAIL] " + str(rule_report[1]) + " - " + str(rule_report[2]) + "\n")
     sf.close()
 
+    audit_report.insert(0, audit_date)
     print("Filename: " + filename + ".txt")
-    print(colored("File saved in current directory.", success))
+    print(colored("[✓] .txt file saved in current directory.\n", success))
     wait(0.5)
-    remediation(fails)
+    if all == False:
+        remediation(fails)
 
 
-def save_to_md(fails, audit_report):
-    filename = "audit_report_" + str(audit_report[0])
+def save_to_md(fails, audit_report, all):
+    audit_date = audit_report[0]
+    filename = "audit_report_" + str(audit_date)
     mdFile = MdUtils(file_name=filename, title='Audit report')
-    # date = datetime.strptime(audit_report[0], '%d-%m-%Y %H:%M:%S')
-    mdFile.new_paragraph("Audit date : " + str(audit_report[0]))
+    # date = datetime.strptime(audit_date, '%d-%m-%Y %H:%M:%S')
+    mdFile.new_paragraph("Audit date : " + str(audit_date))
     audit_report.pop(0)
     
     for rule_report in audit_report:
@@ -254,14 +258,18 @@ def save_to_md(fails, audit_report):
     mdFile.new_table(columns=3, rows=len(audit_report)+1, text=list_of_strings, text_align='left')
     
     mdFile.create_md_file()
+
+    audit_report.insert(0, audit_date)
     print("Filename: " + filename + ".md")
-    print(colored("File saved in current directory.", success))
+    print(colored("[✓] .md file saved in current directory.\n", success))
     wait(0.5)
-    remediation(fails)
+    if all == False:
+        remediation(fails)
 
 
-def save_to_csv(fails, audit_report):
-    filename = "audit_report_" + str(audit_report[0])
+def save_to_csv(fails, audit_report, all):
+    audit_date = audit_report[0]
+    filename = "audit_report_" + str(audit_date)
     audit_report.pop(0)
 
     with open(filename + '.csv', mode='w') as csv_file:
@@ -271,17 +279,28 @@ def save_to_csv(fails, audit_report):
         for rule_report in audit_report:
             writer.writerow({'cis': str(rule_report[1]), 'title': str(rule_report[2]), 'passed': str(rule_report[6])})
 
+    audit_report.insert(0, audit_date)
     print("Filename: " + filename + ".csv")
-    print(colored("File saved in current directory.", success))
+    print(colored("[✓] .csv file saved in current directory.\n", success))
     wait(0.5)
-    remediation(fails)
+    if all == False:
+        remediation(fails)
 
 
-def save_to_pdf(fails, audit_report):
+def save_to_pdf(fails, audit_report, all):
     print("TODO")
     print("File saved in txt for now.")
     # print("Filename: " + filename + ".pdf")
     wait(0.5)
+    if all == False:
+        remediation(fails)
+
+
+def save_to_all_formats(fails, audit_report):
+    save_to_txt(fails, audit_report, True)
+    save_to_md(fails, audit_report, True)
+    save_to_csv(fails, audit_report, True)
+    # save_to_pdf(fails, audit_report, True)
     remediation(fails)
 
 
@@ -295,18 +314,20 @@ __________________________________________
 |         2. Save to md file             |
 |         3. Save to csv file            |
 |         4. Save to pdf file            |
-|         5. Cancel                      |
+|         5. Save to all formats         |
+|         6. Cancel                      |
 |                                        |
 |________________________________________|
     """)
 
     user_input = input("Enter your choice: ")
 
-    if user_input == '1': clear(), save_to_txt(fails, audit_report)
-    elif user_input == '2': clear(), save_to_md(fails, audit_report)
-    elif user_input == '3': clear(), save_to_csv(fails, audit_report)
-    elif user_input == '4': clear(), save_to_pdf(fails, audit_report)
-    elif user_input == '5': print("\nCancelled !"), wait(0.25), remediation(fails)
+    if user_input == '1': clear(), save_to_txt(fails, audit_report, False)
+    elif user_input == '2': clear(), save_to_md(fails, audit_report, False)
+    elif user_input == '3': clear(), save_to_csv(fails, audit_report, False)
+    elif user_input == '4': clear(), save_to_pdf(fails, audit_report, False)
+    elif user_input == '5': clear(), save_to_all_formats(fails, audit_report)
+    elif user_input == '6': print("\nCancelled !"), wait(0.25), remediation(fails)
     else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), save_results(fails, audit_report)
 
 
@@ -327,17 +348,17 @@ def display_audit_summary(ok, nok, fails, audit_report):
     print(colored("Fail : " + str(nok) + "\n", warning))
 
     user_input = ""
-    while user_input.lower() not in ("yes", "no"):
-        user_input = input("Do you want to save results to a file? [yes|no] ")
-        if user_input.lower() == "yes":
+    while user_input.lower() not in ("y", "n"):
+        user_input = input("Do you want to save results to a file? [y|n] ")
+        if user_input.lower() == "y":
             clear()
             wait(0.2)
             save_results(fails, audit_report)
-        elif user_input.lower() == "no":
+        elif user_input.lower() == "n":
             wait(0.25)
             remediation(fails)
         else:
-        	print(colored("Please enter 'yes' or 'no', is that so difficult?\n", info))
+        	print(colored("Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
 
 
 def audit():
@@ -346,7 +367,7 @@ def audit():
     audits = json.load(f)
 
     nb_audits = len(audits)
-    print("Nombre de règles: " + str(nb_audits) + "\n")
+    print("Rules count: " + str(nb_audits) + "\n")
 
     ok = 0
     nok = 0
