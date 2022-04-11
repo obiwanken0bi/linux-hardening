@@ -78,8 +78,8 @@ def exec_cmd(command):
 
 def main():
     clear()
-    obiwan()
-    wait(1)
+    delay_print(obiwan, 0.0001)
+    wait(0.1)
     menu()
 
 

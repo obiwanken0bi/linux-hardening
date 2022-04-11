@@ -1,5 +1,4 @@
-def obiwan():
-    print("""
+obiwan = """
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;::;::::;;;;;,''...         ....';:::::::::::::::::ccclodOXWMMWKkdllccc:::::::::::::
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::::::;,'..                   ..',::::::::::::::cclldkKNMMMNOxolcccc:::::::::::::
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;::;;:::::::,..            .........   ..',;::::::::::cccloxOXWMMWKkdllcccc:::::::::::::
@@ -39,4 +38,4 @@ def obiwan():
 ::::::::::::::::::,. ..'',oxkOO0000KKKXXXKKKX0OKXKOkkO00OxdxOOko;'',,,.,dOO0000K00O0XNWMMMWNKOO00KK0kkO00KKK00000OO0KKKKOdc:::cccc
 ::::::::::::::::::,.':::c:;cdkO000000KKXXXKKX0O0XX0OkO000kxkOOOko,',,''ckO0000KK0OOKXWMMMMWX0kO00KKOxk00KKK0000OOO0KKKK0xc::::::cc
 :::::::::::::::::::clodooxd::okO0000OO0KXXXKKKO0XXK0kkOOOOkkO0OOkl,''.;xO00000K00O0XNWMMMWNKOO00KKOxkO00000000OO0KKKKKK0xc::::::::
-:::::::::::::::::cdkooxxxk0Odclxk0KK0kk0KXXXXK00KXKKOkOOOOOOO000Okl,.'okO0000000OOKXWMMMMWNKOO00K0xxO0000000OO00KKKKKK00kl::::::::""")
+:::::::::::::::::cdkooxxxk0Odclxk0KK0kk0KXXXXK00KXKKOkOOOOOOO000Okl,.'okO0000000OOKXWMMMMWNKOO00K0xxO0000000OO00KKKKKK00kl::::::::\n"""
