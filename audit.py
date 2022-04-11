@@ -41,6 +41,12 @@ def delay_print(string, duration):
         time.sleep(duration)
 
 
+# def increasing_counter(int, delay):
+#     for i in range(int):
+#         print('\r', str(i), end = '')
+#         time.sleep(delay)
+
+
 def menu():
     print("""
 __________________________________________
@@ -200,7 +206,7 @@ __________________________________________
 
         if user_input == '1': clear(), fix_all(fails)
         elif user_input == '2': clear(), fix_one_by_one(fails)
-        elif user_input == '3': print("\nReturning to menu..."), wait(0.25), menu()
+        elif user_input == '3': print("\nReturning to menu..."), wait(0.5), clear(), menu()
         else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), remediation(fails)
 
 
@@ -344,12 +350,20 @@ def display_audit_summary(ok, nok, fails, audit_report):
 /     づ
     """)
     wait(0.5)
-    print(colored("Pass : " + str(ok), success))
-    print(colored("Fail : " + str(nok) + "\n", warning))
+    # print(colored("Pass : " + str(ok), success))
+    for i in range(ok):
+        print('\rPass : ' + str(i), end = '')
+        time.sleep(0.1)
+    print("")
+    # print(colored("Fail : " + str(nok), warning))
+    for i in range(nok):
+        print('\rFail : ' + str(i), end = '')
+        time.sleep(0.1)
+    print("")
 
     user_input = ""
     while user_input.lower() not in ("y", "n"):
-        user_input = input("Do you want to save results to a file? [y|n] ")
+        user_input = input("\nDo you want to save results to a file? [y|n] ")
         if user_input.lower() == "y":
             clear()
             wait(0.2)
