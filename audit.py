@@ -9,20 +9,24 @@ from mdutils.mdutils import MdUtils
 from obiwan import obiwan
 
 
+# Colors for termcolor
 default = 'white'
 success = 'green'
 info = 'yellow'
 warning = 'red'
 
 
+# Clear screen
 def clear():
     os.system("clear")
 
 
+# Wait for 's' seconds
 def wait(s):
     time.sleep(s)
 
 
+# Prints 'string' then an amount of dots one by one for 'duration' seconds
 def dots(string, duration):
     s = '.'
     sys.stdout.write(string)
@@ -34,6 +38,7 @@ def dots(string, duration):
     print("")
 
 
+# Prints 'string' characters one by one, each one separated by 'duration' seconds
 def delay_print(string, duration):
     for char in string:
         sys.stdout.write(char)
@@ -41,12 +46,14 @@ def delay_print(string, duration):
         time.sleep(duration)
 
 
+# Prints an increasing counter from 1 to 'int', each one separated by 'delay' seconds
 # def increasing_counter(int, delay):
 #     for i in range(int):
 #         print('\r', str(i), end = '')
 #         time.sleep(delay)
 
 
+# Prints the main menu
 def menu():
     print("""
 __________________________________________
@@ -68,6 +75,7 @@ __________________________________________
     else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), menu()
 
 
+# Executes a shell command and returns the output or error
 def exec_cmd(command):
     proc = subprocess.Popen(command, shell = True, stdin = None, stdout = subprocess.PIPE, stderr = subprocess.PIPE, encoding = 'utf8')
     (out, err) = proc.communicate(timeout=15)
@@ -89,11 +97,12 @@ def main():
     menu()
 
 
+# Prints the remediation summary
 def remediation_summary(fails, remaining_fails, audits):
     print("""
      _______________________
     |                       |
-    |  Remediation summary  |
+    |  REMEDIATION SUMMARY  |
     |_______________________|
     """)
     wait(0.25)
@@ -116,6 +125,7 @@ def remediation_summary(fails, remaining_fails, audits):
     menu()
 
 
+# Tries to fix all the vulnerabilities found
 def fix_all(fails):
     f = open('audit_list.json')
     audits = json.load(f)
@@ -145,6 +155,7 @@ def fix_all(fails):
     remediation_summary(fails, remaining_fails, audits)
 
 
+# Tries to fix each vulnerability found, asking the user for each one
 def fix_one_by_one(fails):
     print("In progress...")
     wait(0.25)
@@ -185,6 +196,7 @@ def fix_one_by_one(fails):
     remediation_summary(fails, remaining_fails, audits)
 
 
+# Menu asking the user if he/she wants to fix the vulnerabilities found by the audit
 def remediation(fails):
     if len(fails) == 0:
         menu()
@@ -210,14 +222,10 @@ __________________________________________
         else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), remediation(fails)
 
 
-# audit_report = [
-#                 audit_date,
-#                 rule_report1,
-#                 rule_report2,
-#                 ...
-#                ]
+# audit_report = [audit_date, rule_report1, rule_report2, ...]
 # rule_report = [id, cis, title, audit_cmd, expected, fix_cmd, passed]
 
+# Saves the report to a txt file
 def save_to_txt(fails, audit_report, all):
     audit_date = audit_report[0]
     filename = "audit_report_" + str(audit_date)
@@ -240,6 +248,7 @@ def save_to_txt(fails, audit_report, all):
         remediation(fails)
 
 
+# Saves the report to a markdown file (a list & an array)
 def save_to_md(fails, audit_report, all):
     audit_date = audit_report[0]
     filename = "audit_report_" + str(audit_date)
@@ -273,6 +282,7 @@ def save_to_md(fails, audit_report, all):
         remediation(fails)
 
 
+# Saves the report to a csv file
 def save_to_csv(fails, audit_report, all):
     audit_date = audit_report[0]
     filename = "audit_report_" + str(audit_date)
@@ -293,6 +303,7 @@ def save_to_csv(fails, audit_report, all):
         remediation(fails)
 
 
+# Saves the report to a pdf file
 def save_to_pdf(fails, audit_report, all):
     print("TODO")
     print("File saved in txt for now.")
@@ -302,6 +313,7 @@ def save_to_pdf(fails, audit_report, all):
         remediation(fails)
 
 
+# Saves the report in each file format
 def save_to_all_formats(fails, audit_report):
     save_to_txt(fails, audit_report, True)
     save_to_md(fails, audit_report, True)
@@ -310,6 +322,7 @@ def save_to_all_formats(fails, audit_report):
     remediation(fails)
 
 
+# Menu for saving audit results in different formats
 def save_results(fails, audit_report):
     print("""
 __________________________________________
@@ -337,17 +350,13 @@ __________________________________________
     else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), save_results(fails, audit_report)
 
 
+# Displays the audit summary and asks the user if he/she wants to save a report
 def display_audit_summary(ok, nok, fails, audit_report):
     print("""
-     ___________
-    |           |
-    |   Audit   |
-    |  summary  |
-    |___________|
-       ||
-(\__/) ||
-(•ㅅ•) ||
-/     づ
+     _______________________
+    |                       |
+    |     AUDIT SUMMARY     |
+    |_______________________|
     """)
     wait(0.5)
     # print(colored("Pass : " + str(ok), success))
@@ -375,13 +384,14 @@ def display_audit_summary(ok, nok, fails, audit_report):
         	print(colored("Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
 
 
+# Performs audit on system from JSON rules list
+# Returns number of passed and fails, an array of fails ids and an array usefull for the report
 def audit():
-    print("")
     f = open('audit_list.json')
     audits = json.load(f)
 
     nb_audits = len(audits)
-    print("Rules count: " + str(nb_audits) + "\n")
+    print("\nRules count: " + str(nb_audits) + "\n")
 
     ok = 0
     nok = 0
@@ -426,6 +436,7 @@ def audit():
     display_audit_summary(ok, nok, fails, audit_report)
 
 
+# Checks Python version and manages keyboard interrupt from user
 if __name__ == '__main__':
     try:
         if sys.version_info[0] < 3:
