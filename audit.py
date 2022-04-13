@@ -82,11 +82,11 @@ def exec_cmd(command):
     out = out.rstrip()  # .rstrip() removes training line
     err = err.rstrip()
     if err == "":
-        print('Output: ' + out)
+        # print('Output: ' + out)
         return out
     else:
         # print('Error: '  + err)
-        print('Output (err): '  + err)
+        # print('Output (err): '  + err)
         return err
 
 
@@ -198,10 +198,11 @@ def fix_one_by_one(fails):
 
 # Menu asking the user if he/she wants to fix the vulnerabilities found by the audit
 def remediation(fails):
+    clear()
     if len(fails) == 0:
         menu()
     else:
-        print("\n" + str(len(fails)) + " vulnerabilies found by audit.")
+        print("\n " + str(len(fails)) + " vulnerabilies found by audit.")
         print("""
 __________________________________________
 |                                        |
@@ -361,12 +362,12 @@ def display_audit_summary(ok, nok, fails, audit_report):
     wait(0.5)
     # print(colored("Pass : " + str(ok), success))
     for i in range(ok):
-        print('\rPass : ' + str(i), end = '')
+        print('\r    Pass : ' + str(i), end = '')
         time.sleep(0.1)
     print("")
     # print(colored("Fail : " + str(nok), warning))
     for i in range(nok):
-        print('\rFail : ' + str(i), end = '')
+        print('\r    Fail : ' + str(i), end = '')
         time.sleep(0.1)
     print("")
 
@@ -391,7 +392,8 @@ def audit():
     audits = json.load(f)
 
     nb_audits = len(audits)
-    print("\nRules count: " + str(nb_audits) + "\n")
+    print("\n " + str(nb_audits) + " rules to check\n")
+    wait(0.5)
 
     ok = 0
     nok = 0
@@ -431,7 +433,7 @@ def audit():
         # print("Remaining rules to audit :" + str(remaining_audits) + "\n")
         wait(0.05)
 
-    input(colored("Audit completed! Press any key to display summary", success))
+    input(colored("\n\n\n\n\nAudit completed! Press any key to display summary\n", success))
     clear()
     display_audit_summary(ok, nok, fails, audit_report)
 

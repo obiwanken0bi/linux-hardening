@@ -252,7 +252,7 @@
         "cis": "5.1.1",
         "title": "Ensure cron daemon is enabled and running",
         "audit": "systemctl is-enabled cron && systemctl status cron | grep 'Active: active (running) '",
-        "expected": "enabled\nActive: active (running)",
+        "expected": "Active: active (running)",
         "remediation": "systemctl --now enable cron"
     },
     {
