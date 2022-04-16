@@ -64,8 +64,8 @@ def menu():
  ║       2. Launch audit               ║
  ║       3. Exit                       ║
  ║                                     ║
- ╚═════════════════════════════════════╝
-""")
+ ╚═════════════════════════════════════╝""")
+    print("")
 
     user_input = input(" Enter your choice: ")
 
@@ -120,9 +120,6 @@ def remediation_summary(fails, remaining_fails, audits, audit_report):
     if success_fixes:
         print(colored("\nSuccessfully fixed: " + str(success_fixes), success))
 
-    # input("\nPress any key to return to menu")
-    # clear()
-    # menu()
     wait(0.5)
     print("")
     user_input = ""
@@ -219,16 +216,16 @@ def remediation(fails, remaining_fails, audits, audit_report):
         print("\n " + str(len(fails)) + " vulnerabilies found by audit.")
         wait(0.25)
         print("""
-__________________________________________
-|                                        |
-|              REMEDIATION               |
-|                                        |
-|       1. Fix all vulnerabilities       |
-|       2. Fix one by one                |
-|       3. Do nothing                    |
-|                                        |
-|________________________________________|
-        """)
+ ╔═════════════════════════════════════╗
+ ║                                     ║
+ ║             REMEDIATION             ║
+ ║                                     ║
+ ║      1. Fix all vulnerabilities     ║
+ ║      2. Fix one by one              ║
+ ║      3. Do nothing                  ║
+ ║                                     ║
+ ╚═════════════════════════════════════╝""")
+        print("")
 
         user_input = input("Enter your choice: ")
 
@@ -353,19 +350,19 @@ def save_to_all_formats(fails, remaining_fails, audit_report):
 # Menu for saving audit results in different formats
 def save_results(fails, remaining_fails, audit_report):
     print("""
-__________________________________________
-|                                        |
-|              SAVE RESULTS              |
-|                                        |
-|         1. Save to txt file            |
-|         2. Save to md file             |
-|         3. Save to csv file            |
-|         4. Save to pdf file            |
-|         5. Save to all formats         |
-|         6. Cancel                      |
-|                                        |
-|________________________________________|
-    """)
+ ╔═════════════════════════════════════╗
+ ║                                     ║
+ ║             SAVE RESULTS            ║
+ ║                                     ║
+ ║       1. Save to txt file           ║
+ ║       2. Save to md file            ║
+ ║       3. Save to csv file           ║
+ ║       4. Save to pdf file           ║
+ ║       5. Save to all formats        ║
+ ║       6. Cancel                     ║
+ ║                                     ║
+ ╚═════════════════════════════════════╝""")
+    print("")
 
     user_input = input("Enter your choice: ")
 
@@ -386,7 +383,7 @@ def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
  ║            AUDIT SUMMARY            ║
  ║                                     ║""")
     wait(0.5)
-    # print(colored("Pass : " + str(ok), success))
+
     for i in range(ok):
         if i < 10:
             print('\r ║       Pass : ' + str(i) + '                      ║', end = '')
@@ -396,7 +393,7 @@ def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
             print('\r ║       Pass : ' + str(i) + '                    ║', end = '')
         time.sleep(0.1)
     print("")
-    # print(colored("Fail : " + str(nok), warning))
+
     for i in range(nok):
         if i < 10:
             print('\r ║       Fail : ' + str(i) + '                      ║', end = '')
@@ -408,20 +405,7 @@ def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
     print("""
  ║                                     ║
  ╚═════════════════════════════════════╝""")
-
-    # user_input = ""
-    # while user_input.lower() not in ("y", "n"):
-    #     user_input = input("\nDo you want to save results to a file? [y|n] ")
-    #     if user_input.lower() == "y":
-    #         clear()
-    #         wait(0.2)
-    #         save_results(fails, audit_report)
-    #     elif user_input.lower() == "n":
-    #         wait(0.25)
-    #         remediation(fails)
-    #     else:
-    #     	print(colored("Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
-    
+    print("")
     wait(0.5)
     input(colored("\n\nPress any key to continue\n", success))
     clear()
