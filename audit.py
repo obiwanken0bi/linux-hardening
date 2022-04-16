@@ -98,7 +98,7 @@ def main():
 
 
 # Prints the remediation summary
-def remediation_summary(fails, remaining_fails, audits):
+def remediation_summary(fails, remaining_fails, audits, audit_report):
     print("""
      _______________________
     |                       |
@@ -120,13 +120,27 @@ def remediation_summary(fails, remaining_fails, audits):
     if success_fixes:
         print(colored("\nSuccessfully fixed: " + str(success_fixes), success))
 
-    input("\nPress any key to return to menu")
-    clear()
-    menu()
+    # input("\nPress any key to return to menu")
+    # clear()
+    # menu()
+    wait(0.5)
+    print("")
+    user_input = ""
+    while user_input.lower() not in ("y", "n"):
+        user_input = input("\nDo you want to save results to a file? [y|n] ")
+        if user_input.lower() == "y":
+            clear()
+            wait(0.2)
+            save_results(fails, remaining_fails, audit_report)
+        elif user_input.lower() == "n":
+            wait(0.25)
+            menu()
+        else:
+        	print(colored("Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
 
 
 # Tries to fix all the vulnerabilities found
-def fix_all(fails):
+def fix_all(fails, audit_report):
     f = open('audit_list.json')
     audits = json.load(f)
 
@@ -152,11 +166,11 @@ def fix_all(fails):
     
     f.close()
     wait(0.5)
-    remediation_summary(fails, remaining_fails, audits)
+    remediation_summary(fails, remaining_fails, audits, audit_report)
 
 
 # Tries to fix each vulnerability found, asking the user for each one
-def fix_one_by_one(fails):
+def fix_one_by_one(fails, audit_report):
     print("In progress...")
     wait(0.25)
 
@@ -193,11 +207,11 @@ def fix_one_by_one(fails):
                     print(colored("[✗] No remediation found - " + entry['title'], info))
     f.close()
     wait(0.5)
-    remediation_summary(fails, remaining_fails, audits)
+    remediation_summary(fails, remaining_fails, audits, audit_report)
 
 
 # Menu asking the user if he/she wants to fix the vulnerabilities found by the audit
-def remediation(fails):
+def remediation(fails, remaining_fails, audits, audit_report):
     clear()
     if len(fails) == 0:
         menu()
@@ -217,23 +231,25 @@ __________________________________________
 
         user_input = input("Enter your choice: ")
 
-        if user_input == '1': clear(), fix_all(fails)
-        elif user_input == '2': clear(), fix_one_by_one(fails)
-        elif user_input == '3': print("\nReturning to menu..."), wait(0.5), clear(), menu()
-        else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), remediation(fails)
+        if user_input == '1': clear(), fix_all(fails, audit_report)
+        elif user_input == '2': clear(), fix_one_by_one(fails, audit_report)
+        elif user_input == '3': clear(), remediation_summary(fails, remaining_fails, audits, audit_report)
+        else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), remediation(fails, remaining_fails, audits, audit_report)
 
 
 # audit_report = [audit_date, rule_report1, rule_report2, ...]
 # rule_report = [id, cis, title, audit_cmd, expected, fix_cmd, passed]
 
 # Saves the report to a txt file
-def save_to_txt(fails, audit_report, all):
+def save_to_txt(fails, remaining_fails, audit_report, all):
     audit_date = audit_report[0]
     filename = "audit_report_" + str(audit_date)
     
     with open(filename + ".txt", 'w') as sf:
         sf.write("Audit date: " + str(audit_date) + "\n\n")
         audit_report.pop(0)
+        sf.write("Vulnerabilities found by initial audit: " + str(len(fails)) + "\n")
+        sf.write("Remaining vulnerabilities after remediation attempt: " + str(len(fails) - len(remaining_fails)) + "\n")
         for rule_report in audit_report:
             if rule_report[6] == True:
                 sf.write("    [PASS] " + str(rule_report[1]) + " - " + str(rule_report[2]) + "\n")
@@ -246,11 +262,13 @@ def save_to_txt(fails, audit_report, all):
     print(colored("[✓] .txt file saved in current directory.\n", success))
     wait(0.5)
     if all == False:
-        remediation(fails)
+        input(colored("\n\nPress any key to finish and return to menu\n", success))
+        clear()
+        menu()
 
 
 # Saves the report to a markdown file (a list & an array)
-def save_to_md(fails, audit_report, all):
+def save_to_md(fails, remaining_fails, audit_report, all):
     audit_date = audit_report[0]
     filename = "audit_report_" + str(audit_date)
     mdFile = MdUtils(file_name=filename, title='Audit report')
@@ -280,11 +298,13 @@ def save_to_md(fails, audit_report, all):
     print(colored("[✓] .md file saved in current directory.\n", success))
     wait(0.5)
     if all == False:
-        remediation(fails)
+        input(colored("\n\nPress any key to finish and return to menu\n", success))
+        clear()
+        menu()
 
 
 # Saves the report to a csv file
-def save_to_csv(fails, audit_report, all):
+def save_to_csv(fails, remaining_fails, audit_report, all):
     audit_date = audit_report[0]
     filename = "audit_report_" + str(audit_date)
     audit_report.pop(0)
@@ -301,30 +321,36 @@ def save_to_csv(fails, audit_report, all):
     print(colored("[✓] .csv file saved in current directory.\n", success))
     wait(0.5)
     if all == False:
-        remediation(fails)
+        input(colored("\n\nPress any key to finish and return to menu\n", success))
+        clear()
+        menu()
 
 
 # Saves the report to a pdf file
-def save_to_pdf(fails, audit_report, all):
+def save_to_pdf(fails, remaining_fails, audit_report, all):
     print("TODO")
     print("File saved in txt for now.")
     # print("Filename: " + filename + ".pdf")
     wait(0.5)
     if all == False:
-        remediation(fails)
+        input(colored("\n\nPress any key to finish and return to menu\n", success))
+        clear()
+        menu()
 
 
 # Saves the report in each file format
-def save_to_all_formats(fails, audit_report):
-    save_to_txt(fails, audit_report, True)
-    save_to_md(fails, audit_report, True)
-    save_to_csv(fails, audit_report, True)
-    # save_to_pdf(fails, audit_report, True)
-    remediation(fails)
+def save_to_all_formats(fails, remaining_fails, audit_report):
+    save_to_txt(fails, remaining_fails, audit_report, True)
+    save_to_md(fails, remaining_fails, audit_report, True)
+    save_to_csv(fails, remaining_fails, audit_report, True)
+    # save_to_pdf(fails, remaining_fails, audit_report, True)
+    input(colored("\n\nPress any key to finish and return to menu\n", success))
+    clear()
+    menu()
 
 
 # Menu for saving audit results in different formats
-def save_results(fails, audit_report):
+def save_results(fails, remaining_fails, audit_report):
     print("""
 __________________________________________
 |                                        |
@@ -342,17 +368,17 @@ __________________________________________
 
     user_input = input("Enter your choice: ")
 
-    if user_input == '1': clear(), save_to_txt(fails, audit_report, False)
-    elif user_input == '2': clear(), save_to_md(fails, audit_report, False)
-    elif user_input == '3': clear(), save_to_csv(fails, audit_report, False)
-    elif user_input == '4': clear(), save_to_pdf(fails, audit_report, False)
-    elif user_input == '5': clear(), save_to_all_formats(fails, audit_report)
-    elif user_input == '6': print("\nCancelled !"), wait(0.25), remediation(fails)
-    else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), save_results(fails, audit_report)
+    if user_input == '1': clear(), save_to_txt(fails, remaining_fails, audit_report, False)
+    elif user_input == '2': clear(), save_to_md(fails, remaining_fails, audit_report, False)
+    elif user_input == '3': clear(), save_to_csv(fails, remaining_fails, audit_report, False)
+    elif user_input == '4': clear(), save_to_pdf(fails, remaining_fails, audit_report, False)
+    elif user_input == '5': clear(), save_to_all_formats(fails, remaining_fails, audit_report)
+    elif user_input == '6': print("\nCancelled !"), wait(0.25), clear(), menu()
+    else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), save_results(fails, remaining_fails, audit_report)
 
 
 # Displays the audit summary and asks the user if he/she wants to save a report
-def display_audit_summary(ok, nok, fails, audit_report):
+def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report):
     print("""
      _______________________
     |                       |
@@ -371,18 +397,23 @@ def display_audit_summary(ok, nok, fails, audit_report):
         time.sleep(0.1)
     print("")
 
-    user_input = ""
-    while user_input.lower() not in ("y", "n"):
-        user_input = input("\nDo you want to save results to a file? [y|n] ")
-        if user_input.lower() == "y":
-            clear()
-            wait(0.2)
-            save_results(fails, audit_report)
-        elif user_input.lower() == "n":
-            wait(0.25)
-            remediation(fails)
-        else:
-        	print(colored("Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
+    # user_input = ""
+    # while user_input.lower() not in ("y", "n"):
+    #     user_input = input("\nDo you want to save results to a file? [y|n] ")
+    #     if user_input.lower() == "y":
+    #         clear()
+    #         wait(0.2)
+    #         save_results(fails, audit_report)
+    #     elif user_input.lower() == "n":
+    #         wait(0.25)
+    #         remediation(fails)
+    #     else:
+    #     	print(colored("Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
+    
+    wait(0.5)
+    input(colored("\n\nPress any key to continue\n", success))
+    clear()
+    remediation(fails, remaining_fails, audits, audit_report)
 
 
 # Performs audit on system from JSON rules list
@@ -400,6 +431,7 @@ def audit():
 
     fails = []
     audit_report = []
+    remaining_fails = []
 
     audit_date = datetime.today().strftime('%Y-%m-%d-%H%M%S')
     audit_report.append(audit_date)
@@ -433,9 +465,14 @@ def audit():
         # print("Remaining rules to audit :" + str(remaining_audits) + "\n")
         wait(0.05)
 
-    input(colored("\n\n\n\n\nAudit completed! Press any key to display summary\n", success))
+    input(colored("""
+    \n\n\n
+----------------------------------------------------
+| Audit completed! Press any key to display summary |
+----------------------------------------------------
+    """, success))
     clear()
-    display_audit_summary(ok, nok, fails, audit_report)
+    display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
 
 
 # Checks Python version and manages keyboard interrupt from user
