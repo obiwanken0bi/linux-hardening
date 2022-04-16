@@ -56,18 +56,18 @@ def delay_print(string, duration):
 # Prints the main menu
 def menu():
     print("""
-__________________________________________
-|                                        |
-|                  MENU                  |
-|                                        |
-|         1. How to use this tool        |
-|         2. Launch audit                |
-|         3. Exit                        |
-|                                        |
-|________________________________________|
-    """)
+ ╔═════════════════════════════════════╗
+ ║                                     ║
+ ║                 MENU                ║
+ ║                                     ║
+ ║       1. How to use this tool       ║
+ ║       2. Launch audit               ║
+ ║       3. Exit                       ║
+ ║                                     ║
+ ╚═════════════════════════════════════╝
+""")
 
-    user_input = input("Enter your choice: ")
+    user_input = input(" Enter your choice: ")
 
     if user_input == '1': clear(), print("\nNothing for now"), wait(1), menu()
     elif user_input == '2': clear(), audit(), wait(1), menu()
@@ -158,11 +158,11 @@ def fix_all(fails, audit_report):
                     check_result = exec_cmd(entry['audit'])
                     if entry['expected'] in check_result:
                         remaining_fails.remove(fail_id)
-                        print(colored("[✓] Vuln fixed - " + entry['title'], success))
+                        print(colored("[✓] Vuln fixed", success))
                     else:
-                        print(colored("[✗] Remediation didn't work - " + entry['title'], warning))
+                        print(colored("[✗] Remediation didn't work", warning))
                 else:
-                    print(colored("[✗] No remediation found - " + entry['title'], info))
+                    print(colored("[✗] No remediation found", info))
     
     f.close()
     wait(0.5)
@@ -194,17 +194,17 @@ def fix_one_by_one(fails, audit_report):
                             check_result = exec_cmd(entry['audit'])
                             if entry['expected'] in check_result:
                                 remaining_fails.remove(fail_id)
-                                print(colored("[✓] Vuln fixed - " + entry['title'], success))
+                                print(colored("[✓] Vuln fixed", success))
                             else:
-                                print(colored("[✗] Remediation didn't work - " + entry['title'], warning))
+                                print(colored("[✗] Remediation didn't work", warning))
                         elif user_input.lower() == "n":
                             wait(0.2)
-                            print(colored("[✗] Remediation refused by user - " + entry['title'], info))
+                            print(colored("[✗] Remediation refused by user", info))
                             break
                         else:
                             print(colored("Please enter 'y' or 'n', is that so difficult?\n", info))
                 else:
-                    print(colored("[✗] No remediation found - " + entry['title'], info))
+                    print(colored("[✗] No remediation found", info))
     f.close()
     wait(0.5)
     remediation_summary(fails, remaining_fails, audits, audit_report)
@@ -217,6 +217,7 @@ def remediation(fails, remaining_fails, audits, audit_report):
         menu()
     else:
         print("\n " + str(len(fails)) + " vulnerabilies found by audit.")
+        wait(0.25)
         print("""
 __________________________________________
 |                                        |
@@ -380,22 +381,33 @@ __________________________________________
 # Displays the audit summary and asks the user if he/she wants to save a report
 def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report):
     print("""
-     _______________________
-    |                       |
-    |     AUDIT SUMMARY     |
-    |_______________________|
-    """)
+ ╔═════════════════════════════════════╗
+ ║                                     ║
+ ║            AUDIT SUMMARY            ║
+ ║                                     ║""")
     wait(0.5)
     # print(colored("Pass : " + str(ok), success))
     for i in range(ok):
-        print('\r    Pass : ' + str(i), end = '')
+        if i < 10:
+            print('\r ║       Pass : ' + str(i) + '                      ║', end = '')
+        elif i < 100:
+            print('\r ║       Pass : ' + str(i) + '                     ║', end = '')
+        else:
+            print('\r ║       Pass : ' + str(i) + '                    ║', end = '')
         time.sleep(0.1)
     print("")
     # print(colored("Fail : " + str(nok), warning))
     for i in range(nok):
-        print('\r    Fail : ' + str(i), end = '')
+        if i < 10:
+            print('\r ║       Fail : ' + str(i) + '                      ║', end = '')
+        elif i < 100:
+            print('\r ║       Fail : ' + str(i) + '                     ║', end = '')
+        else:
+            print('\r ║       Fail : ' + str(i) + '                    ║', end = '')
         time.sleep(0.1)
-    print("")
+    print("""
+ ║                                     ║
+ ╚═════════════════════════════════════╝""")
 
     # user_input = ""
     # while user_input.lower() not in ("y", "n"):
@@ -466,11 +478,10 @@ def audit():
         wait(0.05)
 
     input(colored("""
-    \n\n\n
 ----------------------------------------------------
 | Audit completed! Press any key to display summary |
 ----------------------------------------------------
-    """, success))
+""", default))
     clear()
     display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
 
