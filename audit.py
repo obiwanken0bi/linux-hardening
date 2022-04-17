@@ -100,11 +100,10 @@ def main():
 # Prints the remediation summary
 def remediation_summary(fails, remaining_fails, audits, audit_report):
     print("""
-     _______________________
-    |                       |
-    |  REMEDIATION SUMMARY  |
-    |_______________________|
-    """)
+ ┌─────────────────────┐
+ │ REMEDIATION SUMMARY │
+ └─────────────────────┘
+""")
     wait(0.25)
     if len(remaining_fails) == 0:
         print(colored("Remediation completed!", success))
@@ -113,7 +112,7 @@ def remediation_summary(fails, remaining_fails, audits, audit_report):
         for fail_id in remaining_fails:
             for entry in audits:
                 if entry['id'] == fail_id:
-                    print("[CIS ", entry['cis'], "] ", entry['title'])
+                    print("CIS ", entry['cis'], " - ", entry['title'])
                     break
 
     success_fixes = list(set(fails) - set(remaining_fails))
@@ -124,7 +123,10 @@ def remediation_summary(fails, remaining_fails, audits, audit_report):
     print("")
     user_input = ""
     while user_input.lower() not in ("y", "n"):
-        user_input = input("\nDo you want to save results to a file? [y|n] ")
+        user_input = input("""
+ ┌──────────────────────────────────────────────┐
+ │ Do you want to save results to a file? [y|n] │
+ └──────────────────────────────────────────────┘""")
         if user_input.lower() == "y":
             clear()
             wait(0.2)
@@ -183,7 +185,11 @@ def fix_one_by_one(fails, audit_report):
                 if (entry['remediation'] != ""):
                     user_input = ""
                     while user_input.lower() not in ("y", "n"):
-                        user_input = input("Do you want to fix this vulnerability? [y|n] ")
+                        # user_input = input("Do you want to fix this vulnerability? [y|n] ")
+                        user_input = input("""
+ ┌──────────────────────────────────────────────┐
+ │ Do you want to fix this vulnerability? [y|n] │
+ └──────────────────────────────────────────────┘""")
                         if user_input.lower() == "y":
                             wait(0.2)
                             # fix_result = exec_cmd(entry['remediation'] + " -y")   # UNCOMMENT THIS ONLY IN A VM
@@ -260,7 +266,10 @@ def save_to_txt(fails, remaining_fails, audit_report, all):
     print(colored("[✓] .txt file saved in current directory.\n", success))
     wait(0.5)
     if all == False:
-        input(colored("\n\nPress any key to finish and return to menu\n", success))
+        input(colored("""
+ ┌────────────────────────────────────────────┐
+ │ Press any key to finish and return to menu │
+ └────────────────────────────────────────────┘""", default))
         clear()
         menu()
 
@@ -296,7 +305,10 @@ def save_to_md(fails, remaining_fails, audit_report, all):
     print(colored("[✓] .md file saved in current directory.\n", success))
     wait(0.5)
     if all == False:
-        input(colored("\n\nPress any key to finish and return to menu\n", success))
+        input(colored("""
+ ┌────────────────────────────────────────────┐
+ │ Press any key to finish and return to menu │
+ └────────────────────────────────────────────┘""", default))
         clear()
         menu()
 
@@ -319,7 +331,10 @@ def save_to_csv(fails, remaining_fails, audit_report, all):
     print(colored("[✓] .csv file saved in current directory.\n", success))
     wait(0.5)
     if all == False:
-        input(colored("\n\nPress any key to finish and return to menu\n", success))
+        input(colored("""
+ ┌────────────────────────────────────────────┐
+ │ Press any key to finish and return to menu │
+ └────────────────────────────────────────────┘""", default))
         clear()
         menu()
 
@@ -331,7 +346,10 @@ def save_to_pdf(fails, remaining_fails, audit_report, all):
     # print("Filename: " + filename + ".pdf")
     wait(0.5)
     if all == False:
-        input(colored("\n\nPress any key to finish and return to menu\n", success))
+        input(colored("""
+ ┌────────────────────────────────────────────┐
+ │ Press any key to finish and return to menu │
+ └────────────────────────────────────────────┘""", default))
         clear()
         menu()
 
@@ -342,7 +360,10 @@ def save_to_all_formats(fails, remaining_fails, audit_report):
     save_to_md(fails, remaining_fails, audit_report, True)
     save_to_csv(fails, remaining_fails, audit_report, True)
     # save_to_pdf(fails, remaining_fails, audit_report, True)
-    input(colored("\n\nPress any key to finish and return to menu\n", success))
+    input(colored("""
+ ┌────────────────────────────────────────────┐
+ │ Press any key to finish and return to menu │
+ └────────────────────────────────────────────┘""", default))
     clear()
     menu()
 
@@ -379,10 +400,9 @@ def save_results(fails, remaining_fails, audit_report):
 def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report):
     print("""
  ╔═════════════════════════════════════╗
- ║                                     ║
- ║            AUDIT SUMMARY            ║
  ║                                     ║""")
-    wait(0.5)
+    delay_print(" ║            AUDIT SUMMARY            ║", 0.01)
+    print("\n ║                                     ║")
 
     for i in range(ok):
         if i < 10:
@@ -407,7 +427,10 @@ def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
  ╚═════════════════════════════════════╝""")
     print("")
     wait(0.5)
-    input(colored("\n\nPress any key to continue\n", success))
+    input(colored("""
+ ┌───────────────────────────┐
+ │ Press any key to continue │
+ └───────────────────────────┘""", default))
     clear()
     remediation(fails, remaining_fails, audits, audit_report)
 
@@ -462,9 +485,9 @@ def audit():
         wait(0.05)
 
     input(colored("""
-----------------------------------------------------
-| Audit completed! Press any key to display summary |
-----------------------------------------------------
+ ┌───────────────────────────────────────────────────┐
+ │ Audit completed! Press any key to display summary │
+ └───────────────────────────────────────────────────┘
 """, default))
     clear()
     display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
