@@ -108,11 +108,11 @@ def remediation_summary(fails, remaining_fails, audits, audit_report):
     if len(remaining_fails) == 0:
         print(colored("Remediation completed!", success))
     else:
-        print(colored("Some remediation attempt(s) failed: ", warning))
+        print(colored("Remediation failed on the following rules: ", warning))
         for fail_id in remaining_fails:
             for entry in audits:
                 if entry['id'] == fail_id:
-                    print("CIS ", entry['cis'], " - ", entry['title'])
+                    print("- " + entry['title'] + " (CIS " + entry['cis'] + ")")
                     break
 
     success_fixes = list(set(fails) - set(remaining_fails))
@@ -133,6 +133,7 @@ def remediation_summary(fails, remaining_fails, audits, audit_report):
             save_results(fails, remaining_fails, audit_report)
         elif user_input.lower() == "n":
             wait(0.25)
+            clear()
             menu()
         else:
         	print(colored("Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
@@ -144,6 +145,11 @@ def fix_all(fails, audit_report):
     audits = json.load(f)
 
     remaining_fails = fails
+
+    print("""
+ ┌─────────────────────────┐
+ │ Fix all vulnerabilities │
+ └─────────────────────────┘""")
 
     for fail_id in fails:
         for entry in audits:
@@ -170,44 +176,47 @@ def fix_all(fails, audit_report):
 
 # Tries to fix each vulnerability found, asking the user for each one
 def fix_one_by_one(fails, audit_report):
-    print("In progress...")
-    wait(0.25)
-
     f = open('audit_list.json')
     audits = json.load(f)
 
     remaining_fails = fails
 
+    print("""
+ ┌─────────────────────────────────────┐
+ │ Choose which vulnerabilities to fix │
+ └─────────────────────────────────────┘""")
+
     for fail_id in fails:
         for entry in audits:
             if entry['id'] == fail_id:
-                print("\nVulnerability: " + entry['title'])
+                print("\nVulnerability: " + entry['title'] + " (CIS " + entry['cis'] + ")")
                 if (entry['remediation'] != ""):
                     user_input = ""
                     while user_input.lower() not in ("y", "n"):
-                        # user_input = input("Do you want to fix this vulnerability? [y|n] ")
-                        user_input = input("""
- ┌──────────────────────────────────────────────┐
- │ Do you want to fix this vulnerability? [y|n] │
- └──────────────────────────────────────────────┘""")
+                        user_input = input("\n ↳ Do you want to fix this vulnerability? [y|n]")
+#                         user_input = input("""
+#  ┌──────────────────────────────────────────────┐
+#  │ Do you want to fix this vulnerability? [y|n] │
+#  └──────────────────────────────────────────────┘""")
                         if user_input.lower() == "y":
                             wait(0.2)
                             # fix_result = exec_cmd(entry['remediation'] + " -y")   # UNCOMMENT THIS ONLY IN A VM
-                            dots("Checking if remediation worked", 0.25)
+                            dots(" Checking if remediation worked", 0.25)
                             check_result = exec_cmd(entry['audit'])
                             if entry['expected'] in check_result:
                                 remaining_fails.remove(fail_id)
-                                print(colored("[✓] Vuln fixed", success))
+                                print(colored(" [✓] Vuln fixed\n", success))
                             else:
-                                print(colored("[✗] Remediation didn't work", warning))
+                                print(colored(" [✗] Remediation didn't work", warning))
+                                # print(" Error: " + fix_result + "\n")     # UNCOMMENT THIS ONLY IN A VM
                         elif user_input.lower() == "n":
                             wait(0.2)
-                            print(colored("[✗] Remediation refused by user", info))
+                            print(colored(" [✗] Remediation refused by user\n", info))
                             break
                         else:
-                            print(colored("Please enter 'y' or 'n', is that so difficult?\n", info))
+                            print(colored(" Please enter 'y' or 'n', is that so difficult?\n", info))
                 else:
-                    print(colored("[✗] No remediation found", info))
+                    print(colored(" [✗] No remediation found\n", info))
     f.close()
     wait(0.5)
     remediation_summary(fails, remaining_fails, audits, audit_report)
@@ -215,11 +224,10 @@ def fix_one_by_one(fails, audit_report):
 
 # Menu asking the user if he/she wants to fix the vulnerabilities found by the audit
 def remediation(fails, remaining_fails, audits, audit_report):
-    clear()
     if len(fails) == 0:
         menu()
     else:
-        print("\n " + str(len(fails)) + " vulnerabilies found by audit.")
+        print("\nWe recommend to apply as many fixes as possible. \n\nYou can fix all vulnerabilities at once with the first option, \nbut if you prefer to choose which fix you want to apply, choose the second option.\n")
         wait(0.25)
         print("""
  ╔═════════════════════════════════════╗
@@ -267,9 +275,9 @@ def save_to_txt(fails, remaining_fails, audit_report, all):
     wait(0.5)
     if all == False:
         input(colored("""
- ┌────────────────────────────────────────────┐
- │ Press any key to finish and return to menu │
- └────────────────────────────────────────────┘""", default))
+ ┌──────────────────────────────────────────┐
+ │ Press Enter to finish and return to menu │
+ └──────────────────────────────────────────┘""", default))
         clear()
         menu()
 
@@ -306,9 +314,9 @@ def save_to_md(fails, remaining_fails, audit_report, all):
     wait(0.5)
     if all == False:
         input(colored("""
- ┌────────────────────────────────────────────┐
- │ Press any key to finish and return to menu │
- └────────────────────────────────────────────┘""", default))
+ ┌──────────────────────────────────────────┐
+ │ Press Enter to finish and return to menu │
+ └──────────────────────────────────────────┘""", default))
         clear()
         menu()
 
@@ -332,9 +340,9 @@ def save_to_csv(fails, remaining_fails, audit_report, all):
     wait(0.5)
     if all == False:
         input(colored("""
- ┌────────────────────────────────────────────┐
- │ Press any key to finish and return to menu │
- └────────────────────────────────────────────┘""", default))
+ ┌──────────────────────────────────────────┐
+ │ Press Enter to finish and return to menu │
+ └──────────────────────────────────────────┘""", default))
         clear()
         menu()
 
@@ -347,9 +355,9 @@ def save_to_pdf(fails, remaining_fails, audit_report, all):
     wait(0.5)
     if all == False:
         input(colored("""
- ┌────────────────────────────────────────────┐
- │ Press any key to finish and return to menu │
- └────────────────────────────────────────────┘""", default))
+ ┌──────────────────────────────────────────┐
+ │ Press Enter to finish and return to menu │
+ └──────────────────────────────────────────┘""", default))
         clear()
         menu()
 
@@ -361,9 +369,9 @@ def save_to_all_formats(fails, remaining_fails, audit_report):
     save_to_csv(fails, remaining_fails, audit_report, True)
     # save_to_pdf(fails, remaining_fails, audit_report, True)
     input(colored("""
- ┌────────────────────────────────────────────┐
- │ Press any key to finish and return to menu │
- └────────────────────────────────────────────┘""", default))
+ ┌──────────────────────────────────────────┐
+ │ Press Enter to finish and return to menu │
+ └──────────────────────────────────────────┘""", default))
     clear()
     menu()
 
@@ -404,7 +412,7 @@ def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
     delay_print(" ║            AUDIT SUMMARY            ║", 0.01)
     print("\n ║                                     ║")
 
-    for i in range(ok):
+    for i in range(ok + 1):
         if i < 10:
             print('\r ║       Pass : ' + str(i) + '                      ║', end = '')
         elif i < 100:
@@ -414,7 +422,7 @@ def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
         time.sleep(0.1)
     print("")
 
-    for i in range(nok):
+    for i in range(nok + 1):
         if i < 10:
             print('\r ║       Fail : ' + str(i) + '                      ║', end = '')
         elif i < 100:
@@ -425,13 +433,7 @@ def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
     print("""
  ║                                     ║
  ╚═════════════════════════════════════╝""")
-    print("")
-    wait(0.5)
-    input(colored("""
- ┌───────────────────────────┐
- │ Press any key to continue │
- └───────────────────────────┘""", default))
-    clear()
+    wait(0.25)
     remediation(fails, remaining_fails, audits, audit_report)
 
 
@@ -485,9 +487,9 @@ def audit():
         wait(0.05)
 
     input(colored("""
- ┌───────────────────────────────────────────────────┐
- │ Audit completed! Press any key to display summary │
- └───────────────────────────────────────────────────┘
+ ┌─────────────────────────────────────────────────┐
+ │ Audit completed! Press Enter to display summary │
+ └─────────────────────────────────────────────────┘
 """, default))
     clear()
     display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
