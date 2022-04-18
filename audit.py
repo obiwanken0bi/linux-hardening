@@ -156,9 +156,13 @@ def fix_all(fails, audit_report):
             if entry['id'] == fail_id:
                 print("\nVulnerability: " + entry['title'])
                 if (entry['remediation'] != ""):
-                    # fix_result = exec_cmd(entry['remediation'] + " -y")   # UNCOMMENT THIS ONLY IN A VM
-                    wait(0.2)
+                    wait(0.1)
                     dots("Checking if remediation worked", 0.25)
+
+                    # UNCOMMENT THIS ONLY IN A VM
+                    # fix_result = exec_cmd(entry['remediation'] + " -y")
+                    # if "systemctl: invalid option -- 'y'" in fix_result:
+                    #     fix_result = exec_cmd(entry['remediation'])
 
                     check_result = exec_cmd(entry['audit'])
                     if entry['expected'] in check_result:
@@ -194,14 +198,15 @@ def fix_one_by_one(fails, audit_report):
                     user_input = ""
                     while user_input.lower() not in ("y", "n"):
                         user_input = input("\n ↳ Do you want to fix this vulnerability? [y|n]")
-#                         user_input = input("""
-#  ┌──────────────────────────────────────────────┐
-#  │ Do you want to fix this vulnerability? [y|n] │
-#  └──────────────────────────────────────────────┘""")
                         if user_input.lower() == "y":
-                            wait(0.2)
-                            # fix_result = exec_cmd(entry['remediation'] + " -y")   # UNCOMMENT THIS ONLY IN A VM
+                            wait(0.1)
                             dots(" Checking if remediation worked", 0.25)
+
+                            # UNCOMMENT THIS ONLY IN A VM
+                            # fix_result = exec_cmd(entry['remediation'] + " -y")
+                            # if "systemctl: invalid option -- 'y'" in fix_result:
+                            #     fix_result = exec_cmd(entry['remediation'])
+
                             check_result = exec_cmd(entry['audit'])
                             if entry['expected'] in check_result:
                                 remaining_fails.remove(fail_id)
@@ -261,10 +266,13 @@ def save_to_txt(fails, remaining_fails, audit_report, all):
         sf.write("Audit date: " + str(audit_date) + "\n\n")
         audit_report.pop(0)
         sf.write("Vulnerabilities found by initial audit: " + str(len(fails)) + "\n")
-        sf.write("Remaining vulnerabilities after remediation attempt: " + str(len(fails) - len(remaining_fails)) + "\n")
+        sf.write("Remaining vulnerabilities after remediation attempt: " + str(len(remaining_fails)) + "\n\n")
         for rule_report in audit_report:
             if rule_report[6] == True:
-                sf.write("    [PASS] " + str(rule_report[1]) + " - " + str(rule_report[2]) + "\n")
+                if rule_report[0] in fails:
+                    sf.write("   [FIXED] " + str(rule_report[1]) + " - " + str(rule_report[2]) + "\n")
+                else:
+                    sf.write("    [PASS] " + str(rule_report[1]) + " - " + str(rule_report[2]) + "\n")
             else:
                 sf.write("/!\ [FAIL] " + str(rule_report[1]) + " - " + str(rule_report[2]) + "\n")
     sf.close()
@@ -290,17 +298,27 @@ def save_to_md(fails, remaining_fails, audit_report, all):
     # date = datetime.strptime(audit_date, '%d-%m-%Y %H:%M:%S')
     mdFile.new_paragraph("Audit date : " + str(audit_date))
     audit_report.pop(0)
+    mdFile.new_paragraph("Vulnerabilities found by initial audit : " + str(len(fails)))
+    mdFile.new_paragraph("Remaining vulnerabilities after remediation attempt : " + str(len(remaining_fails)))
+    mdFile.write('  \n\n')
     
     for rule_report in audit_report:
         if rule_report[6] == True:
-            mdFile.new_paragraph("[PASS] " + str(rule_report[1]) + " - " + str(rule_report[2]), color='green')
+            if rule_report[0] in fails:
+                mdFile.new_paragraph("[FIXED] " + str(rule_report[1]) + " - " + str(rule_report[2]), color='blue')
+            else:
+                mdFile.new_paragraph("[PASS] " + str(rule_report[1]) + " - " + str(rule_report[2]), color='green')
         else:
             mdFile.new_paragraph("[FAIL] " + str(rule_report[1]) + " - " + str(rule_report[2]), color='red')
+    mdFile.write('  \n\n')
 
     list_of_strings = ["CIS", "Rule", "Passed"]
     for rule_report in audit_report:
         if rule_report[6] == True:
-            list_of_strings.extend([str(rule_report[1]), str(rule_report[2]), "**<font color='green'>Yes</font>**"])
+            if rule_report[0] in fails:
+                list_of_strings.extend([str(rule_report[1]), str(rule_report[2]), "**<font color='blue'>Yes (fixed)</font>**"])
+            else:
+                list_of_strings.extend([str(rule_report[1]), str(rule_report[2]), "**<font color='green'>Yes</font>**"])
         else:
             list_of_strings.extend([str(rule_report[1]), str(rule_report[2]), "**<font color='red'>No</font>**"])
     mdFile.new_line()
