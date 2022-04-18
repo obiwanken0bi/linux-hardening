@@ -117,7 +117,12 @@ def remediation_summary(fails, remaining_fails, audits, audit_report):
 
     success_fixes = list(set(fails) - set(remaining_fails))
     if success_fixes:
-        print(colored("\nSuccessfully fixed: " + str(success_fixes), success))
+        print(colored("\nSuccessfully fixed: ", success))
+        for fixed_id in success_fixes:
+            for entry in audits:
+                if entry['id'] == fixed_id:
+                    print("- " + entry['title'] + " (CIS " + entry['cis'] + ")")
+                    break
 
     wait(0.5)
     print("")
@@ -144,7 +149,7 @@ def fix_all(fails, audit_report):
     f = open('audit_list.json')
     audits = json.load(f)
 
-    remaining_fails = fails
+    remaining_fails = fails.copy()
 
     print("""
  ┌─────────────────────────┐
@@ -174,6 +179,7 @@ def fix_all(fails, audit_report):
                         print(colored("[✓] Vuln fixed", success))
                     else:
                         print(colored("[✗] Remediation didn't work", warning))
+                        # print("Error: " + fix_result + "\n")     # UNCOMMENT THIS ONLY IN A VM
                 else:
                     print(colored("[✗] No remediation found", info))
     
@@ -187,7 +193,7 @@ def fix_one_by_one(fails, audit_report):
     f = open('audit_list.json')
     audits = json.load(f)
 
-    remaining_fails = fails
+    remaining_fails = fails.copy()
 
     print("""
  ┌─────────────────────────────────────┐
@@ -201,7 +207,7 @@ def fix_one_by_one(fails, audit_report):
                 if (entry['remediation'] != ""):
                     user_input = ""
                     while user_input.lower() not in ("y", "n"):
-                        user_input = input("\n ↳ Do you want to fix this vulnerability? [y|n]")
+                        user_input = input("\n ↳ Do you want to fix this vulnerability? [y|n] ")
                         if user_input.lower() == "y":
                             wait(0.1)
                             dots(" Checking if remediation worked", 0.25)
