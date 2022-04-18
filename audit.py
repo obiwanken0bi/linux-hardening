@@ -130,7 +130,7 @@ def remediation_summary(fails, remaining_fails, audits, audit_report):
         if user_input.lower() == "y":
             clear()
             wait(0.2)
-            save_results(fails, remaining_fails, audit_report)
+            save_results(fails, remaining_fails, success_fixes, audit_report)
         elif user_input.lower() == "n":
             wait(0.25)
             clear()
@@ -167,6 +167,10 @@ def fix_all(fails, audit_report):
                     check_result = exec_cmd(entry['audit'])
                     if entry['expected'] in check_result:
                         remaining_fails.remove(fail_id)
+                        for rule_report in audit_report:
+                            if rule_report[0] == entry['id']:
+                                rule_report[6] = True
+                                break
                         print(colored("[✓] Vuln fixed", success))
                     else:
                         print(colored("[✗] Remediation didn't work", warning))
@@ -210,6 +214,10 @@ def fix_one_by_one(fails, audit_report):
                             check_result = exec_cmd(entry['audit'])
                             if entry['expected'] in check_result:
                                 remaining_fails.remove(fail_id)
+                                for rule_report in audit_report:
+                                    if rule_report[0] == entry['id']:
+                                        rule_report[6] = True
+                                        break
                                 print(colored(" [✓] Vuln fixed\n", success))
                             else:
                                 print(colored(" [✗] Remediation didn't work", warning))
@@ -258,7 +266,7 @@ def remediation(fails, remaining_fails, audits, audit_report):
 # rule_report = [id, cis, title, audit_cmd, expected, fix_cmd, passed]
 
 # Saves the report to a txt file
-def save_to_txt(fails, remaining_fails, audit_report, all):
+def save_to_txt(fails, remaining_fails, success_fixes, audit_report, all):
     audit_date = audit_report[0]
     filename = "audit_report_" + str(audit_date)
     
@@ -266,6 +274,7 @@ def save_to_txt(fails, remaining_fails, audit_report, all):
         sf.write("Audit date: " + str(audit_date) + "\n\n")
         audit_report.pop(0)
         sf.write("Vulnerabilities found by initial audit: " + str(len(fails)) + "\n")
+        sf.write("Successfully fixed: " + str(len(success_fixes)) + "\n")
         sf.write("Remaining vulnerabilities after remediation attempt: " + str(len(remaining_fails)) + "\n\n")
         for rule_report in audit_report:
             if rule_report[6] == True:
@@ -291,7 +300,7 @@ def save_to_txt(fails, remaining_fails, audit_report, all):
 
 
 # Saves the report to a markdown file (a list & an array)
-def save_to_md(fails, remaining_fails, audit_report, all):
+def save_to_md(fails, remaining_fails, success_fixes, audit_report, all):
     audit_date = audit_report[0]
     filename = "audit_report_" + str(audit_date)
     mdFile = MdUtils(file_name=filename, title='Audit report')
@@ -299,6 +308,7 @@ def save_to_md(fails, remaining_fails, audit_report, all):
     mdFile.new_paragraph("Audit date : " + str(audit_date))
     audit_report.pop(0)
     mdFile.new_paragraph("Vulnerabilities found by initial audit : " + str(len(fails)))
+    mdFile.new_paragraph("Successfully fixed: " + str(len(success_fixes)))
     mdFile.new_paragraph("Remaining vulnerabilities after remediation attempt : " + str(len(remaining_fails)))
     mdFile.write('  \n\n')
     
@@ -340,7 +350,7 @@ def save_to_md(fails, remaining_fails, audit_report, all):
 
 
 # Saves the report to a csv file
-def save_to_csv(fails, remaining_fails, audit_report, all):
+def save_to_csv(fails, remaining_fails, success_fixes, audit_report, all):
     audit_date = audit_report[0]
     filename = "audit_report_" + str(audit_date)
     audit_report.pop(0)
@@ -366,7 +376,7 @@ def save_to_csv(fails, remaining_fails, audit_report, all):
 
 
 # Saves the report to a pdf file
-def save_to_pdf(fails, remaining_fails, audit_report, all):
+def save_to_pdf(fails, remaining_fails, success_fixes, audit_report, all):
     print("TODO")
     print("File saved in txt for now.")
     # print("Filename: " + filename + ".pdf")
@@ -381,11 +391,11 @@ def save_to_pdf(fails, remaining_fails, audit_report, all):
 
 
 # Saves the report in each file format
-def save_to_all_formats(fails, remaining_fails, audit_report):
-    save_to_txt(fails, remaining_fails, audit_report, True)
-    save_to_md(fails, remaining_fails, audit_report, True)
-    save_to_csv(fails, remaining_fails, audit_report, True)
-    # save_to_pdf(fails, remaining_fails, audit_report, True)
+def save_to_all_formats(fails, remaining_fails, success_fixes, audit_report):
+    save_to_txt(fails, remaining_fails, success_fixes, audit_report, True)
+    save_to_md(fails, remaining_fails, success_fixes, audit_report, True)
+    save_to_csv(fails, remaining_fails, success_fixes, audit_report, True)
+    # save_to_pdf(fails, remaining_fails, success_fixes, audit_report, True)
     input(colored("""
  ┌──────────────────────────────────────────┐
  │ Press Enter to finish and return to menu │
@@ -395,7 +405,7 @@ def save_to_all_formats(fails, remaining_fails, audit_report):
 
 
 # Menu for saving audit results in different formats
-def save_results(fails, remaining_fails, audit_report):
+def save_results(fails, remaining_fails, success_fixes, audit_report):
     print("""
  ╔═════════════════════════════════════╗
  ║                                     ║
@@ -413,13 +423,13 @@ def save_results(fails, remaining_fails, audit_report):
 
     user_input = input("Enter your choice: ")
 
-    if user_input == '1': clear(), save_to_txt(fails, remaining_fails, audit_report, False)
-    elif user_input == '2': clear(), save_to_md(fails, remaining_fails, audit_report, False)
-    elif user_input == '3': clear(), save_to_csv(fails, remaining_fails, audit_report, False)
-    elif user_input == '4': clear(), save_to_pdf(fails, remaining_fails, audit_report, False)
-    elif user_input == '5': clear(), save_to_all_formats(fails, remaining_fails, audit_report)
+    if user_input == '1': clear(), save_to_txt(fails, remaining_fails, success_fixes, audit_report, False)
+    elif user_input == '2': clear(), save_to_md(fails, remaining_fails, success_fixes, audit_report, False)
+    elif user_input == '3': clear(), save_to_csv(fails, remaining_fails, success_fixes, audit_report, False)
+    elif user_input == '4': clear(), save_to_pdf(fails, remaining_fails, success_fixes, audit_report, False)
+    elif user_input == '5': clear(), save_to_all_formats(fails, remaining_fails, success_fixes, audit_report)
     elif user_input == '6': print("\nCancelled !"), wait(0.25), clear(), menu()
-    else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), save_results(fails, remaining_fails, audit_report)
+    else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), save_results(fails, remaining_fails, success_fixes, audit_report)
 
 
 # Displays the audit summary and asks the user if he/she wants to save a report
