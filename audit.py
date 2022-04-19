@@ -2,6 +2,7 @@ import os, sys, time
 import subprocess
 import json
 import csv
+import random
 from datetime import datetime
 from wsgiref.simple_server import sys_version
 from termcolor import colored
@@ -162,7 +163,7 @@ def fix_all(fails, audit_report):
                 print("\nVulnerability: " + entry['title'])
                 if (entry['remediation'] != ""):
                     wait(0.1)
-                    dots("Checking if remediation worked", 0.25)
+                    dots("Applying remediation", (random.randint(1, 5) / 10))
 
                     # UNCOMMENT THIS ONLY IN A VM
                     # fix_result = exec_cmd(entry['remediation'] + " -y")
@@ -178,8 +179,8 @@ def fix_all(fails, audit_report):
                                 break
                         print(colored("[✓] Vuln fixed", success))
                     else:
+                        # print("Error: " + fix_result)     # UNCOMMENT THIS ONLY IN A VM
                         print(colored("[✗] Remediation didn't work", warning))
-                        # print("Error: " + fix_result + "\n")     # UNCOMMENT THIS ONLY IN A VM
                 else:
                     print(colored("[✗] No remediation found", info))
     
@@ -210,7 +211,7 @@ def fix_one_by_one(fails, audit_report):
                         user_input = input("\n ↳ Do you want to fix this vulnerability? [y|n] ")
                         if user_input.lower() == "y":
                             wait(0.1)
-                            dots(" Checking if remediation worked", 0.25)
+                            dots(" Applying remediation", (random.randint(1, 5) / 10))
 
                             # UNCOMMENT THIS ONLY IN A VM
                             # fix_result = exec_cmd(entry['remediation'] + " -y")
@@ -226,8 +227,8 @@ def fix_one_by_one(fails, audit_report):
                                         break
                                 print(colored(" [✓] Vuln fixed\n", success))
                             else:
+                                # print(" Error: " + fix_result)     # UNCOMMENT THIS ONLY IN A VM
                                 print(colored(" [✗] Remediation didn't work", warning))
-                                # print(" Error: " + fix_result + "\n")     # UNCOMMENT THIS ONLY IN A VM
                         elif user_input.lower() == "n":
                             wait(0.2)
                             print(colored(" [✗] Remediation refused by user\n", info))
@@ -264,7 +265,7 @@ def remediation(fails, remaining_fails, audits, audit_report):
 
         if user_input == '1': clear(), fix_all(fails, audit_report)
         elif user_input == '2': clear(), fix_one_by_one(fails, audit_report)
-        elif user_input == '3': clear(), remediation_summary(fails, remaining_fails, audits, audit_report)
+        elif user_input == '3': clear(), save_results(fails, remaining_fails, [], audit_report)
         else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), remediation(fails, remaining_fails, audits, audit_report)
 
 
