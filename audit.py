@@ -73,9 +73,6 @@ def menu():
  ╚═════════════════════════════════════╝""")
     print("")
 
-    if is_root() == False:
-        print(colored(" As you do not have privileged rights, you'll only be able to run the audit.\n To run audit and remediations, please run `sudo python3 audit.py`.\n", info))
-
     user_input = input(" Enter your choice: ")
 
     if user_input == '1': clear(), print("\nNothing for now"), wait(1), menu()
@@ -474,25 +471,7 @@ def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
  ║                                     ║
  ╚═════════════════════════════════════╝""")
     wait(0.5)
-    if is_root():
-        remediation(fails, remaining_fails, audits, audit_report)
-    else:
-        user_input = ""
-        while user_input.lower() not in ("y", "n"):
-            user_input = input("""
- ┌──────────────────────────────────────────────┐
- │ Do you want to save results to a file? [y|n] │
- └──────────────────────────────────────────────┘""")
-            if user_input.lower() == "y":
-                clear()
-                wait(0.2)
-                save_results(fails, remaining_fails, [], audit_report)
-            elif user_input.lower() == "n":
-                wait(0.25)
-                clear()
-                menu()
-            else:
-                print(colored(" Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
+    remediation(fails, remaining_fails, audits, audit_report)
 
 
 # Performs audit on system from JSON rules list
@@ -553,9 +532,9 @@ def audit():
     display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
 
 
-# Checks Python version and manages keyboard interrupt from user
 if __name__ == '__main__':
     try:
+        # Checks Python version
         if sys.version_info[0] < 3:
             version = ".".join(map(str, sys.version_info[:3]))
             print("\nYou are using Python " + version)
@@ -563,7 +542,13 @@ if __name__ == '__main__':
             print("Exiting...")
             wait(0.5)
             quit()
+        # Checks if user is root
+        elif is_root() == False:
+            print(colored("\nPlease run this script as a privileged user.\nYou can do so with the command `sudo python3 audit.py`.\n", info))
+            wait(1)
+            quit()
         else:
             main()
+    # Manages keyboard interrupt from user
     except KeyboardInterrupt:
         print("\n\nInterrupted by user... Yes, you.")
