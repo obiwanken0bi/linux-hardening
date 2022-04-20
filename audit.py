@@ -27,6 +27,7 @@ def wait(s):
     time.sleep(s)
 
 
+# Checks if user has privileged rights
 def is_root():
     return os.geteuid() == 0
 
@@ -90,11 +91,8 @@ def exec_cmd(command):
     out = out.rstrip()  # .rstrip() removes training line
     err = err.rstrip()
     if err == "":
-        # print('Output: ' + out)
         return out
     else:
-        # print('Error: '  + err)
-        # print('Output (err): '  + err)
         return err
 
 
