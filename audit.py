@@ -364,17 +364,21 @@ def save_to_csv(fails, remaining_fails, success_fixes, audit_report, all):
     filename = "audit_report_" + str(audit_date)
     audit_report.pop(0)
 
-    with open(filename + '.csv', mode='w') as csv_file:
-        fieldnames = ['cis', 'title', 'passed']
-        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-        writer.writeheader()
-        for rule_report in audit_report:
-            writer.writerow({'cis': str(rule_report[1]), 'title': str(rule_report[2]), 'passed': str(rule_report[6])})
+    headers = ['cis', 'title', 'passed']
+    rows = []
+    for rule_report in audit_report:
+        row = [ rule_report[1], rule_report[2], rule_report[6] ]
+        rows.append(row)
+    with open(filename + '.csv', 'w') as f:
+        write = csv.writer(f,delimiter=';')
+        write.writerow(headers)
+        write.writerows(rows)
 
     audit_report.insert(0, audit_date)
     print("Filename: " + filename + ".csv")
     print(colored("[✓] .csv file saved in current directory.\n", success))
     wait(0.5)
+    
     if all == False:
         input(colored("""
  ┌──────────────────────────────────────────┐
