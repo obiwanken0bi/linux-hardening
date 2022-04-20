@@ -27,6 +27,10 @@ def wait(s):
     time.sleep(s)
 
 
+def is_root():
+    return os.geteuid() == 0
+
+
 # Prints 'string' then an amount of dots one by one for 'duration' seconds
 def dots(string, duration):
     s = '.'
@@ -68,12 +72,15 @@ def menu():
  ╚═════════════════════════════════════╝""")
     print("")
 
+    if is_root() == False:
+        print(colored(" As you do not have privileged rights, you'll only be able to run the audit.\n To run audit and remediations, please run `sudo python3 audit.py`.\n", info))
+
     user_input = input(" Enter your choice: ")
 
     if user_input == '1': clear(), print("\nNothing for now"), wait(1), menu()
     elif user_input == '2': clear(), audit(), wait(1), menu()
     elif user_input == '3': print("\nBye !\n"), wait(1), exit()
-    else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), menu()
+    else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(0.5), menu()
 
 
 # Executes a shell command and returns the output or error
@@ -142,7 +149,7 @@ def remediation_summary(fails, remaining_fails, audits, audit_report):
             clear()
             menu()
         else:
-        	print(colored("Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
+        	print(colored(" Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
 
 
 # Tries to fix all the vulnerabilities found
@@ -166,9 +173,9 @@ def fix_all(fails, audit_report):
                     dots("Applying remediation", (random.randint(1, 5) / 10))
 
                     # UNCOMMENT THIS ONLY IN A VM
-                    # fix_result = exec_cmd(entry['remediation'] + " -y")
-                    # if "systemctl: invalid option -- 'y'" in fix_result:
-                    #     fix_result = exec_cmd(entry['remediation'])
+                    fix_result = exec_cmd(entry['remediation'] + " -y")
+                    if "systemctl: invalid option -- 'y'" in fix_result:
+                        fix_result = exec_cmd(entry['remediation'])
 
                     check_result = exec_cmd(entry['audit'])
                     if entry['expected'] in check_result:
@@ -179,7 +186,7 @@ def fix_all(fails, audit_report):
                                 break
                         print(colored("[✓] Vuln fixed", success))
                     else:
-                        # print("Error: " + fix_result)     # UNCOMMENT THIS ONLY IN A VM
+                        print("Error: " + fix_result)     # UNCOMMENT THIS ONLY IN A VM
                         print(colored("[✗] Remediation didn't work", warning))
                 else:
                     print(colored("[✗] No remediation found", info))
@@ -214,9 +221,9 @@ def fix_one_by_one(fails, audit_report):
                             dots(" Applying remediation", (random.randint(1, 5) / 10))
 
                             # UNCOMMENT THIS ONLY IN A VM
-                            # fix_result = exec_cmd(entry['remediation'] + " -y")
-                            # if "systemctl: invalid option -- 'y'" in fix_result:
-                            #     fix_result = exec_cmd(entry['remediation'])
+                            fix_result = exec_cmd(entry['remediation'] + " -y")
+                            if "systemctl: invalid option -- 'y'" in fix_result:
+                                fix_result = exec_cmd(entry['remediation'])
 
                             check_result = exec_cmd(entry['audit'])
                             if entry['expected'] in check_result:
@@ -227,7 +234,7 @@ def fix_one_by_one(fails, audit_report):
                                         break
                                 print(colored(" [✓] Vuln fixed\n", success))
                             else:
-                                # print(" Error: " + fix_result)     # UNCOMMENT THIS ONLY IN A VM
+                                print(" Error: " + fix_result)     # UNCOMMENT THIS ONLY IN A VM
                                 print(colored(" [✗] Remediation didn't work", warning))
                         elif user_input.lower() == "n":
                             wait(0.2)
@@ -266,7 +273,7 @@ def remediation(fails, remaining_fails, audits, audit_report):
         if user_input == '1': clear(), fix_all(fails, audit_report)
         elif user_input == '2': clear(), fix_one_by_one(fails, audit_report)
         elif user_input == '3': clear(), save_results(fails, remaining_fails, [], audit_report)
-        else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), remediation(fails, remaining_fails, audits, audit_report)
+        else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(0.5), remediation(fails, remaining_fails, audits, audit_report)
 
 
 # audit_report = [audit_date, rule_report1, rule_report2, ...]
@@ -436,7 +443,7 @@ def save_results(fails, remaining_fails, success_fixes, audit_report):
     elif user_input == '4': clear(), save_to_pdf(fails, remaining_fails, success_fixes, audit_report, False)
     elif user_input == '5': clear(), save_to_all_formats(fails, remaining_fails, success_fixes, audit_report)
     elif user_input == '6': print("\nCancelled !"), wait(0.25), clear(), menu()
-    else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(1), save_results(fails, remaining_fails, success_fixes, audit_report)
+    else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(0.5), save_results(fails, remaining_fails, success_fixes, audit_report)
 
 
 # Displays the audit summary and asks the user if he/she wants to save a report
@@ -454,7 +461,7 @@ def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
             print('\r ║       Pass : ' + str(i) + '                     ║', end = '')
         else:
             print('\r ║       Pass : ' + str(i) + '                    ║', end = '')
-        time.sleep(0.1)
+        time.sleep(0.05)
     print("")
 
     for i in range(nok + 1):
@@ -464,12 +471,30 @@ def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
             print('\r ║       Fail : ' + str(i) + '                     ║', end = '')
         else:
             print('\r ║       Fail : ' + str(i) + '                    ║', end = '')
-        time.sleep(0.1)
+        time.sleep(0.05)
     print("""
  ║                                     ║
  ╚═════════════════════════════════════╝""")
-    wait(0.25)
-    remediation(fails, remaining_fails, audits, audit_report)
+    wait(0.5)
+    if is_root():
+        remediation(fails, remaining_fails, audits, audit_report)
+    else:
+        user_input = ""
+        while user_input.lower() not in ("y", "n"):
+            user_input = input("""
+ ┌──────────────────────────────────────────────┐
+ │ Do you want to save results to a file? [y|n] │
+ └──────────────────────────────────────────────┘""")
+            if user_input.lower() == "y":
+                clear()
+                wait(0.2)
+                save_results(fails, remaining_fails, [], audit_report)
+            elif user_input.lower() == "n":
+                wait(0.25)
+                clear()
+                menu()
+            else:
+                print(colored(" Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
 
 
 # Performs audit on system from JSON rules list
