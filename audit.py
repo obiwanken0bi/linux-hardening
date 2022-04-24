@@ -4,7 +4,6 @@ import json
 import csv
 import random
 from datetime import datetime
-from wsgiref.simple_server import sys_version
 from termcolor import colored
 from mdutils.mdutils import MdUtils
 from obiwan import obiwan
@@ -57,6 +56,23 @@ def delay_print(string, duration):
 #     for i in range(int):
 #         print('\r', str(i), end = '')
 #         time.sleep(delay)
+
+
+def switch_to_en():
+    # out = exec_cmd("env |egrep -e 'LANGUAGE|LC_ALL|LANG='")
+    # print("Current user's preferences: \n" + out)
+    
+    cmd1 = os.environ["LANG"] = "en_US.UTF-8"
+    exec_cmd(cmd1)
+    cmd2 = os.environ["LC_ALL"] = "en_US.UTF-8"
+    exec_cmd(cmd2)
+    cmd3 = os.environ["LANGUAGE"] = "en_US.UTF-8"
+    exec_cmd(cmd3)
+
+    # print("\nLanguage temporarily changed to english.")
+    # out = exec_cmd("env |egrep -e 'LANGUAGE|LC_ALL|LANG='")
+    # print("Current parameters: \n" + out)
+    # wait(2)
 
 
 # Prints the main menu
@@ -552,6 +568,7 @@ if __name__ == '__main__':
             wait(1)
             quit()
         else:
+            switch_to_en()
             main()
     # Manages keyboard interrupt from user
     except KeyboardInterrupt:
