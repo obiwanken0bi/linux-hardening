@@ -293,7 +293,7 @@ def fix_one_by_one(fails, audit_report):
 # Menu asking the user if he/she wants to fix the vulnerabilities found by the audit
 def remediation(fails, remaining_fails, audits, audit_report):
     if len(fails) == 0:
-        menu()
+        save_results(fails, remaining_fails, [], audit_report)
     else:
         print("\nWe recommend to apply as many fixes as possible. \n\nYou can fix all vulnerabilities at once with the first option, \nbut if you prefer to choose which fix you want to apply, choose the second option.\n")
         wait(0.25)
