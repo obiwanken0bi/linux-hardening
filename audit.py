@@ -1,8 +1,7 @@
-import os, sys, time
-import subprocess
-import json
-import csv
+import os, sys, time, subprocess
+import json, csv
 import random
+import threading, queue
 from datetime import datetime
 from termcolor import colored
 from mdutils.mdutils import MdUtils
@@ -56,6 +55,14 @@ def delay_print(string, duration):
 #     for i in range(int):
 #         print('\r', str(i), end = '')
 #         time.sleep(delay)
+
+
+def animated_loading():
+    chars = ["⢿", "⣻", "⣽", "⣾", "⣷", "⣯", "⣟", "⡿"]
+    for char in chars:
+        sys.stdout.write('\r' + " " + char + ' Applying remediation...')
+        time.sleep(.1)
+        sys.stdout.flush()
 
 
 def switch_to_en():
@@ -163,6 +170,16 @@ def remediation_summary(fails, remaining_fails, audits, audit_report):
         	print(colored(" Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
 
 
+# Executes fix command and checks if fix worked
+def fix_and_check(entry, q):
+    wait(0.2)
+    fix_result = exec_cmd(entry['remediation'] + " -y")
+    if "systemctl: invalid option -- 'y'" in fix_result:
+        fix_result = exec_cmd(entry['remediation'])
+    check_result = exec_cmd(entry['audit'])
+    q.put([fix_result, check_result])
+
+
 # Tries to fix all the vulnerabilities found
 def fix_all(fails, audit_report):
     f = open('audit_list.json')
@@ -178,30 +195,35 @@ def fix_all(fails, audit_report):
     for fail_id in fails:
         for entry in audits:
             if entry['id'] == fail_id:
-                print("\nVulnerability: " + entry['title'])
+                print(colored("\n\nVulnerability: " + entry['title'] + " (CIS " + entry['cis'] + ")\n", attrs=['bold']))
+
                 if (entry['remediation'] != ""):
                     wait(0.1)
-                    dots("Applying remediation", (random.randint(1, 5) / 10))
 
-                    # UNCOMMENT THIS ONLY IN A VM
-                    fix_result = exec_cmd(entry['remediation'] + " -y")
-                    if "systemctl: invalid option -- 'y'" in fix_result:
-                        fix_result = exec_cmd(entry['remediation'])
+                    q = queue.Queue()
+                    the_process = threading.Thread(name='process', target=fix_and_check, args=(entry, q))
+                    the_process.start()
 
-                    check_result = exec_cmd(entry['audit'])
+                    while the_process.is_alive():
+                        animated_loading()
+                    
+                    results = q.get()
+                    fix_result = results[0]
+                    check_result = results[1]
+                    
                     if entry['expected'] in check_result:
                         remaining_fails.remove(fail_id)
                         for rule_report in audit_report:
                             if rule_report[0] == entry['id']:
                                 rule_report[6] = True
                                 break
-                        print(colored("[✓] Vuln fixed", success))
+                        print(colored("\n\n [✓] Vuln fixed", success))
                     else:
-                        print("Error: " + fix_result)     # UNCOMMENT THIS ONLY IN A VM
-                        print(colored("[✗] Remediation didn't work", warning))
+                        print("\n\n Error: " + fix_result)
+                        print(colored("\n [✗] Remediation didn't work", warning))
+                    wait(0.2)
                 else:
                     print(colored("[✗] No remediation found", info))
-    
     f.close()
     wait(0.5)
     remediation_summary(fails, remaining_fails, audits, audit_report)
@@ -222,31 +244,39 @@ def fix_one_by_one(fails, audit_report):
     for fail_id in fails:
         for entry in audits:
             if entry['id'] == fail_id:
-                print("\nVulnerability: " + entry['title'] + " (CIS " + entry['cis'] + ")")
+                print(colored("\n\nVulnerability: " + entry['title'] + " (CIS " + entry['cis'] + ")", attrs=['bold']))
+
                 if (entry['remediation'] != ""):
                     user_input = ""
                     while user_input.lower() not in ("y", "n"):
                         user_input = input("\n ↳ Do you want to fix this vulnerability? [y|n] ")
+                        print("")
                         if user_input.lower() == "y":
                             wait(0.1)
-                            dots(" Applying remediation", (random.randint(1, 5) / 10))
 
-                            # UNCOMMENT THIS ONLY IN A VM
-                            fix_result = exec_cmd(entry['remediation'] + " -y")
-                            if "systemctl: invalid option -- 'y'" in fix_result:
-                                fix_result = exec_cmd(entry['remediation'])
+                            q = queue.Queue()
+                            the_process = threading.Thread(name='process', target=fix_and_check, args=(entry, q))
+                            the_process.start()
 
-                            check_result = exec_cmd(entry['audit'])
+                            while the_process.is_alive():
+                                animated_loading()
+
+                            results = q.get()
+                            fix_result = results[0]
+                            check_result = results[1]
+                            
                             if entry['expected'] in check_result:
                                 remaining_fails.remove(fail_id)
                                 for rule_report in audit_report:
                                     if rule_report[0] == entry['id']:
                                         rule_report[6] = True
                                         break
-                                print(colored(" [✓] Vuln fixed\n", success))
+                                print(colored("\n\n [✓] Vuln fixed", success))
                             else:
-                                print(" Error: " + fix_result)     # UNCOMMENT THIS ONLY IN A VM
-                                print(colored(" [✗] Remediation didn't work", warning))
+                                print("\n\n Error: " + fix_result)
+                                print(colored("\n [✗] Remediation didn't work", warning))
+                            wait(0.2)
+
                         elif user_input.lower() == "n":
                             wait(0.2)
                             print(colored(" [✗] Remediation refused by user\n", info))
