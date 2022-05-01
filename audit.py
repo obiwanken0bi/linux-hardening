@@ -16,6 +16,10 @@ info = 'yellow'
 warning = 'red'
 
 
+#---------------------------------------------------------------------#
+#     Usefull little functions that improve design/UX/refactoring     #
+#---------------------------------------------------------------------#
+
 # Clear screen
 def clear():
     os.system("clear")
@@ -67,6 +71,18 @@ def animated_loading(string):
         sys.stdout.flush()
 
 
+# Executes a shell command and returns the output or error
+def exec_cmd(command):
+    proc = subprocess.Popen(command, shell = True, stdin = None, stdout = subprocess.PIPE, stderr = subprocess.PIPE, encoding = 'utf8')
+    (out, err) = proc.communicate(timeout=15)
+    out = out.rstrip()  # .rstrip() removes training line
+    err = err.rstrip()
+    if err == "":
+        return out
+    else:
+        return err
+
+
 # Switches temporarily CLI language to english (it reverts back when the tool's process ends)
 def switch_to_en():
     # out = exec_cmd("env |egrep -e 'LANGUAGE|LC_ALL|LANG='")    
@@ -76,6 +92,17 @@ def switch_to_en():
     exec_cmd(cmd2)
     cmd3 = os.environ["LANGUAGE"] = "en_US.UTF-8"
     exec_cmd(cmd3)
+
+
+#----------------------------------------------------------------------#
+#                            Main functions                            #
+#----------------------------------------------------------------------#
+
+def main():
+    clear()
+    delay_print(obiwan, 0.0001)
+    wait(0.1)
+    menu()
 
 
 # Prints the main menu
@@ -100,70 +127,121 @@ def menu():
     else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(0.5), menu()
 
 
-# Executes a shell command and returns the output or error
-def exec_cmd(command):
-    proc = subprocess.Popen(command, shell = True, stdin = None, stdout = subprocess.PIPE, stderr = subprocess.PIPE, encoding = 'utf8')
-    (out, err) = proc.communicate(timeout=15)
-    out = out.rstrip()  # .rstrip() removes training line
-    err = err.rstrip()
-    if err == "":
-        return out
-    else:
-        return err
+# Performs audit on system from JSON rules list
+# Returns number of passed and fails, an array of fails ids and an array usefull for the report
+def audit():
+    f = open('audit_list.json')
+    audits = json.load(f)
 
-
-def main():
-    clear()
-    delay_print(obiwan, 0.0001)
-    wait(0.1)
-    menu()
-
-
-# Prints the remediation summary
-def remediation_summary(fails, remaining_fails, audits, audit_report):
-    print("""
- ┌─────────────────────┐
- │ REMEDIATION SUMMARY │
- └─────────────────────┘
-""")
-    wait(0.25)
-    if len(remaining_fails) == 0:
-        print(colored("Remediation completed!", success))
-    else:
-        print(colored("Remediation failed on the following rules: ", warning))
-        for fail_id in remaining_fails:     # Listing all remaining fails
-            for entry in audits:
-                if entry['id'] == fail_id:
-                    print("- " + entry['title'] + " (CIS " + entry['cis'] + ")")
-                    break
-
-    success_fixes = list(set(fails) - set(remaining_fails))
-    if success_fixes:
-        print(colored("\nSuccessfully fixed: ", success))
-        for fixed_id in success_fixes:      # Listing all successful fixes
-            for entry in audits:
-                if entry['id'] == fixed_id:
-                    print("- " + entry['title'] + " (CIS " + entry['cis'] + ")")
-                    break
-
+    nb_audits = len(audits)
+    print("\n " + str(nb_audits) + " rules to check\n")
     wait(0.5)
-    print("")
-    user_input = ""
-    while user_input.lower() not in ("y", "n"):
-        user_input = input("""
- ┌──────────────────────────────────────────────┐
- │ Do you want to save results to a file? [y|n] │
- └──────────────────────────────────────────────┘""")
-        if user_input.lower() == "y":
-            clear()
-            wait(0.2)
-            save_results(fails, remaining_fails, success_fixes, audit_report)
-        elif user_input.lower() == "n":
-            wait(0.25)
-            clear()
-            menu()
+
+    # Initialization of successes/fails counters, and usefull report arrays
+    ok = 0
+    nok = 0
+    fails = []
+    audit_report = []
+    remaining_fails = []
+
+    audit_date = datetime.today().strftime('%Y-%m-%d-%H%M%S')
+    audit_report.append(audit_date)
+    remaining_audits = nb_audits
+
+    for audit in audits:
+        id = audit["id"]
+        cis = audit["cis"]
+        title = audit["title"]
+        audit_cmd = audit["audit"]
+        expected = audit["expected"]
+        fix_cmd = audit["remediation"]
+        passed = False
+
+        # dots("Auditing CIS: " + cis, 0.1)
+        delay_print("Auditing CIS: " + cis + "...\n", 0.005)
+
+        result = exec_cmd(audit_cmd)
+
+        if expected in result:
+            passed = True
+            ok += 1
+            print(colored("[✓] " + title + "\n", success))
         else:
-        	print(colored(" Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
+            nok += 1
+            print(colored("[✗] " + title + "\n", warning))
+            fails.append(id)
+        remaining_audits -= 1
+        rule_report = [id, cis, title, audit_cmd, expected, fix_cmd, passed]
+        audit_report.append(rule_report)
+        wait(0.05)
+
+    input(colored("""
+ ┌─────────────────────────────────────────────────┐
+ │ Audit completed! Press Enter to display summary │
+ └─────────────────────────────────────────────────┘
+""", default))
+    clear()
+    display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
+
+
+# Displays the audit summary and asks the user if he/she wants to save a report
+def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report):
+    print("""
+ ╔═════════════════════════════════════╗
+ ║                                     ║""")
+    delay_print(" ║            AUDIT SUMMARY            ║", 0.01)
+    print("\n ║                                     ║")
+
+    for i in range(ok + 1):
+        if i < 10:
+            print('\r ║       Pass : ' + str(i) + '                      ║', end = '')
+        elif i < 100:
+            print('\r ║       Pass : ' + str(i) + '                     ║', end = '')
+        else:
+            print('\r ║       Pass : ' + str(i) + '                    ║', end = '')
+        time.sleep(0.05)
+    print("")
+
+    for i in range(nok + 1):
+        if i < 10:
+            print('\r ║       Fail : ' + str(i) + '                      ║', end = '')
+        elif i < 100:
+            print('\r ║       Fail : ' + str(i) + '                     ║', end = '')
+        else:
+            print('\r ║       Fail : ' + str(i) + '                    ║', end = '')
+        time.sleep(0.05)
+    print("""
+ ║                                     ║
+ ╚═════════════════════════════════════╝""")
+    wait(0.5)
+    remediation(fails, remaining_fails, audits, audit_report)
+
+
+# Menu asking the user if he/she wants to fix the vulnerabilities found by the audit
+def remediation(fails, remaining_fails, audits, audit_report):
+    if len(fails) == 0:
+        save_results(fails, remaining_fails, [], audit_report)
+    else:
+        print("\nWe recommend to apply as many fixes as possible. \n\nYou can fix all vulnerabilities at once with the first option, \nbut if you prefer to choose which fix you want to apply, choose the second option.\n")
+        wait(0.25)
+        print("""
+ ╔═════════════════════════════════════╗
+ ║                                     ║
+ ║             REMEDIATION             ║
+ ║                                     ║
+ ║      1. Fix all vulnerabilities     ║
+ ║      2. Fix one by one              ║
+ ║      3. Do nothing                  ║
+ ║                                     ║
+ ╚═════════════════════════════════════╝""")
+        print("")
+
+        user_input = input("Enter your choice: ")
+
+        if user_input == '1': clear(), fix_all(fails, audit_report)
+        elif user_input == '2': clear(), fix_one_by_one(fails, audit_report)
+        elif user_input == '3': clear(), save_results(fails, remaining_fails, [], audit_report)
+        else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(0.5), remediation(fails, remaining_fails, audits, audit_report)
 
 
 # Executes fix command and checks if fix worked
@@ -286,31 +364,78 @@ def fix_one_by_one(fails, audit_report):
     remediation_summary(fails, remaining_fails, audits, audit_report)
 
 
-# Menu asking the user if he/she wants to fix the vulnerabilities found by the audit
-def remediation(fails, remaining_fails, audits, audit_report):
-    if len(fails) == 0:
-        save_results(fails, remaining_fails, [], audit_report)
+# Prints the remediation summary
+def remediation_summary(fails, remaining_fails, audits, audit_report):
+    print("""
+ ┌─────────────────────┐
+ │ REMEDIATION SUMMARY │
+ └─────────────────────┘
+""")
+    wait(0.25)
+    if len(remaining_fails) == 0:
+        print(colored("Remediation completed!", success))
     else:
-        print("\nWe recommend to apply as many fixes as possible. \n\nYou can fix all vulnerabilities at once with the first option, \nbut if you prefer to choose which fix you want to apply, choose the second option.\n")
-        wait(0.25)
-        print("""
+        print(colored("Remediation failed on the following rules: ", warning))
+        for fail_id in remaining_fails:     # Listing all remaining fails
+            for entry in audits:
+                if entry['id'] == fail_id:
+                    print("- " + entry['title'] + " (CIS " + entry['cis'] + ")")
+                    break
+
+    success_fixes = list(set(fails) - set(remaining_fails))
+    if success_fixes:
+        print(colored("\nSuccessfully fixed: ", success))
+        for fixed_id in success_fixes:      # Listing all successful fixes
+            for entry in audits:
+                if entry['id'] == fixed_id:
+                    print("- " + entry['title'] + " (CIS " + entry['cis'] + ")")
+                    break
+
+    wait(0.5)
+    print("")
+    user_input = ""
+    while user_input.lower() not in ("y", "n"):
+        user_input = input("""
+ ┌──────────────────────────────────────────────┐
+ │ Do you want to save results to a file? [y|n] │
+ └──────────────────────────────────────────────┘""")
+        if user_input.lower() == "y":
+            clear()
+            wait(0.2)
+            save_results(fails, remaining_fails, success_fixes, audit_report)
+        elif user_input.lower() == "n":
+            wait(0.25)
+            clear()
+            menu()
+        else:
+        	print(colored(" Please enter 'y' (yes) or 'n' (no), is that so difficult?\n", info))
+
+
+# Menu for saving audit results in different formats
+def save_results(fails, remaining_fails, success_fixes, audit_report):
+    print("""
  ╔═════════════════════════════════════╗
  ║                                     ║
- ║             REMEDIATION             ║
+ ║             SAVE RESULTS            ║
  ║                                     ║
- ║      1. Fix all vulnerabilities     ║
- ║      2. Fix one by one              ║
- ║      3. Do nothing                  ║
+ ║       1. Save to txt file           ║
+ ║       2. Save to md file            ║
+ ║       3. Save to csv file           ║
+ ║       4. Save to all formats        ║
+ ║       5. Cancel                     ║
  ║                                     ║
  ╚═════════════════════════════════════╝""")
-        print("")
+    print("")
 
-        user_input = input("Enter your choice: ")
+    user_input = input("Enter your choice: ")
 
-        if user_input == '1': clear(), fix_all(fails, audit_report)
-        elif user_input == '2': clear(), fix_one_by_one(fails, audit_report)
-        elif user_input == '3': clear(), save_results(fails, remaining_fails, [], audit_report)
-        else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(0.5), remediation(fails, remaining_fails, audits, audit_report)
+    if user_input == '1': clear(), save_to_txt(fails, remaining_fails, success_fixes, audit_report, False)
+    elif user_input == '2': clear(), save_to_md(fails, remaining_fails, success_fixes, audit_report, False)
+    elif user_input == '3': clear(), save_to_csv(fails, remaining_fails, success_fixes, audit_report, False)
+    # elif user_input == '4': clear(), save_to_pdf(fails, remaining_fails, success_fixes, audit_report, False)
+    elif user_input == '4': clear(), save_to_all_formats(fails, remaining_fails, success_fixes, audit_report)
+    elif user_input == '5': print("\nCancelled !"), wait(0.25), clear(), menu()
+    else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(0.5), save_results(fails, remaining_fails, success_fixes, audit_report)
 
 
 # Memo for 'audit_report' and 'rule_report' formats :
@@ -465,123 +590,6 @@ def save_to_all_formats(fails, remaining_fails, success_fixes, audit_report):
  └──────────────────────────────────────────┘""", default))
     clear()
     menu()
-
-
-# Menu for saving audit results in different formats
-def save_results(fails, remaining_fails, success_fixes, audit_report):
-    print("""
- ╔═════════════════════════════════════╗
- ║                                     ║
- ║             SAVE RESULTS            ║
- ║                                     ║
- ║       1. Save to txt file           ║
- ║       2. Save to md file            ║
- ║       3. Save to csv file           ║
- ║       4. Save to all formats        ║
- ║       5. Cancel                     ║
- ║                                     ║
- ╚═════════════════════════════════════╝""")
-    print("")
-
-    user_input = input("Enter your choice: ")
-
-    if user_input == '1': clear(), save_to_txt(fails, remaining_fails, success_fixes, audit_report, False)
-    elif user_input == '2': clear(), save_to_md(fails, remaining_fails, success_fixes, audit_report, False)
-    elif user_input == '3': clear(), save_to_csv(fails, remaining_fails, success_fixes, audit_report, False)
-    # elif user_input == '4': clear(), save_to_pdf(fails, remaining_fails, success_fixes, audit_report, False)
-    elif user_input == '4': clear(), save_to_all_formats(fails, remaining_fails, success_fixes, audit_report)
-    elif user_input == '5': print("\nCancelled !"), wait(0.25), clear(), menu()
-    else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(0.5), save_results(fails, remaining_fails, success_fixes, audit_report)
-
-
-# Displays the audit summary and asks the user if he/she wants to save a report
-def display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report):
-    print("""
- ╔═════════════════════════════════════╗
- ║                                     ║""")
-    delay_print(" ║            AUDIT SUMMARY            ║", 0.01)
-    print("\n ║                                     ║")
-
-    for i in range(ok + 1):
-        if i < 10:
-            print('\r ║       Pass : ' + str(i) + '                      ║', end = '')
-        elif i < 100:
-            print('\r ║       Pass : ' + str(i) + '                     ║', end = '')
-        else:
-            print('\r ║       Pass : ' + str(i) + '                    ║', end = '')
-        time.sleep(0.05)
-    print("")
-
-    for i in range(nok + 1):
-        if i < 10:
-            print('\r ║       Fail : ' + str(i) + '                      ║', end = '')
-        elif i < 100:
-            print('\r ║       Fail : ' + str(i) + '                     ║', end = '')
-        else:
-            print('\r ║       Fail : ' + str(i) + '                    ║', end = '')
-        time.sleep(0.05)
-    print("""
- ║                                     ║
- ╚═════════════════════════════════════╝""")
-    wait(0.5)
-    remediation(fails, remaining_fails, audits, audit_report)
-
-
-# Performs audit on system from JSON rules list
-# Returns number of passed and fails, an array of fails ids and an array usefull for the report
-def audit():
-    f = open('audit_list.json')
-    audits = json.load(f)
-
-    nb_audits = len(audits)
-    print("\n " + str(nb_audits) + " rules to check\n")
-    wait(0.5)
-
-    # Initialization of successes/fails counters, and usefull report arrays
-    ok = 0
-    nok = 0
-    fails = []
-    audit_report = []
-    remaining_fails = []
-
-    audit_date = datetime.today().strftime('%Y-%m-%d-%H%M%S')
-    audit_report.append(audit_date)
-    remaining_audits = nb_audits
-
-    for audit in audits:
-        id = audit["id"]
-        cis = audit["cis"]
-        title = audit["title"]
-        audit_cmd = audit["audit"]
-        expected = audit["expected"]
-        fix_cmd = audit["remediation"]
-        passed = False
-
-        # dots("Auditing CIS: " + cis, 0.1)
-        delay_print("Auditing CIS: " + cis + "...\n", 0.005)
-
-        result = exec_cmd(audit_cmd)
-
-        if expected in result:
-            passed = True
-            ok += 1
-            print(colored("[✓] " + title + "\n", success))
-        else:
-            nok += 1
-            print(colored("[✗] " + title + "\n", warning))
-            fails.append(id)
-        remaining_audits -= 1
-        rule_report = [id, cis, title, audit_cmd, expected, fix_cmd, passed]
-        audit_report.append(rule_report)
-        wait(0.05)
-
-    input(colored("""
- ┌─────────────────────────────────────────────────┐
- │ Audit completed! Press Enter to display summary │
- └─────────────────────────────────────────────────┘
-""", default))
-    clear()
-    display_audit_summary(ok, nok, fails, remaining_fails, audits, audit_report)
 
 
 if __name__ == '__main__':
