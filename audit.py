@@ -1,3 +1,4 @@
+# Librairies import
 import os, sys, time, subprocess
 import json, csv
 import random
@@ -20,7 +21,7 @@ def clear():
     os.system("clear")
 
 
-# Wait for 's' seconds
+# Wait for 's' seconds (param can be an integer or a float)
 def wait(s):
     time.sleep(s)
 
@@ -51,35 +52,30 @@ def delay_print(string, duration):
 
 
 # Prints an increasing counter from 1 to 'int', each one separated by 'delay' seconds
-# def increasing_counter(int, delay):
-#     for i in range(int):
-#         print('\r', str(i), end = '')
-#         time.sleep(delay)
+def increasing_counter(int, delay):
+    for i in range(int):
+        print('\r', str(i), end = '')
+        time.sleep(delay)
 
 
-def animated_loading():
+# Prints an animated loading string
+def animated_loading(string):
     chars = ["⢿", "⣻", "⣽", "⣾", "⣷", "⣯", "⣟", "⡿"]
     for char in chars:
-        sys.stdout.write('\r' + " " + char + ' Applying remediation...')
+        sys.stdout.write('\r' + " " + char + string)
         time.sleep(.1)
         sys.stdout.flush()
 
 
+# Switches temporarily CLI language to english (it reverts back when the tool's process ends)
 def switch_to_en():
-    # out = exec_cmd("env |egrep -e 'LANGUAGE|LC_ALL|LANG='")
-    # print("Current user's preferences: \n" + out)
-    
+    # out = exec_cmd("env |egrep -e 'LANGUAGE|LC_ALL|LANG='")    
     cmd1 = os.environ["LANG"] = "en_US.UTF-8"
     exec_cmd(cmd1)
     cmd2 = os.environ["LC_ALL"] = "en_US.UTF-8"
     exec_cmd(cmd2)
     cmd3 = os.environ["LANGUAGE"] = "en_US.UTF-8"
     exec_cmd(cmd3)
-
-    # print("\nLanguage temporarily changed to english.")
-    # out = exec_cmd("env |egrep -e 'LANGUAGE|LC_ALL|LANG='")
-    # print("Current parameters: \n" + out)
-    # wait(2)
 
 
 # Prints the main menu
@@ -135,7 +131,7 @@ def remediation_summary(fails, remaining_fails, audits, audit_report):
         print(colored("Remediation completed!", success))
     else:
         print(colored("Remediation failed on the following rules: ", warning))
-        for fail_id in remaining_fails:
+        for fail_id in remaining_fails:     # Listing all remaining fails
             for entry in audits:
                 if entry['id'] == fail_id:
                     print("- " + entry['title'] + " (CIS " + entry['cis'] + ")")
@@ -144,7 +140,7 @@ def remediation_summary(fails, remaining_fails, audits, audit_report):
     success_fixes = list(set(fails) - set(remaining_fails))
     if success_fixes:
         print(colored("\nSuccessfully fixed: ", success))
-        for fixed_id in success_fixes:
+        for fixed_id in success_fixes:      # Listing all successful fixes
             for entry in audits:
                 if entry['id'] == fixed_id:
                     print("- " + entry['title'] + " (CIS " + entry['cis'] + ")")
@@ -174,10 +170,10 @@ def remediation_summary(fails, remaining_fails, audits, audit_report):
 def fix_and_check(entry, q):
     wait(0.2)
     fix_result = exec_cmd(entry['remediation'] + " -y")
-    if "systemctl: invalid option -- 'y'" in fix_result:
+    if "invalid option -- 'y'" in fix_result:
         fix_result = exec_cmd(entry['remediation'])
     check_result = exec_cmd(entry['audit'])
-    q.put([fix_result, check_result])
+    q.put([fix_result, check_result])   # Sends function's results to thread's queue
 
 
 # Tries to fix all the vulnerabilities found
@@ -205,7 +201,7 @@ def fix_all(fails, audit_report):
                     the_process.start()
 
                     while the_process.is_alive():
-                        animated_loading()
+                        animated_loading(" Applying remediation...")
                     
                     results = q.get()
                     fix_result = results[0]
@@ -215,7 +211,7 @@ def fix_all(fails, audit_report):
                         remaining_fails.remove(fail_id)
                         for rule_report in audit_report:
                             if rule_report[0] == entry['id']:
-                                rule_report[6] = True
+                                rule_report[6] = True   # passed = True
                                 break
                         print(colored("\n\n [✓] Vuln fixed", success))
                     else:
@@ -259,7 +255,7 @@ def fix_one_by_one(fails, audit_report):
                             the_process.start()
 
                             while the_process.is_alive():
-                                animated_loading()
+                                animated_loading(" Applying remediation...")
 
                             results = q.get()
                             fix_result = results[0]
@@ -269,7 +265,7 @@ def fix_one_by_one(fails, audit_report):
                                 remaining_fails.remove(fail_id)
                                 for rule_report in audit_report:
                                     if rule_report[0] == entry['id']:
-                                        rule_report[6] = True
+                                        rule_report[6] = True   # passed = True
                                         break
                                 print(colored("\n\n [✓] Vuln fixed", success))
                             else:
@@ -317,6 +313,7 @@ def remediation(fails, remaining_fails, audits, audit_report):
         else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(0.5), remediation(fails, remaining_fails, audits, audit_report)
 
 
+# Memo for 'audit_report' and 'rule_report' formats :
 # audit_report = [audit_date, rule_report1, rule_report2, ...]
 # rule_report = [id, cis, title, audit_cmd, expected, fix_cmd, passed]
 
@@ -345,7 +342,8 @@ def save_to_txt(fails, remaining_fails, success_fixes, audit_report, all):
     print("Filename: " + filename + ".txt")
     print(colored("[✓] .txt file saved in current directory.\n", success))
     wait(0.5)
-    if all == False:
+
+    if all == False:    # Check if user asked to save result in all formats
         input(colored("""
  ┌──────────────────────────────────────────┐
  │ Press Enter to finish and return to menu │
@@ -367,6 +365,7 @@ def save_to_md(fails, remaining_fails, success_fixes, audit_report, all):
     mdFile.new_paragraph("Remaining vulnerabilities after remediation attempt : " + str(len(remaining_fails)))
     mdFile.write('  \n\n')
     
+    # Classic list
     for rule_report in audit_report:
         if rule_report[6] == True:
             if rule_report[0] in fails:
@@ -377,6 +376,7 @@ def save_to_md(fails, remaining_fails, success_fixes, audit_report, all):
             mdFile.new_paragraph("[FAIL] " + str(rule_report[1]) + " - " + str(rule_report[2]), color='red')
     mdFile.write('  \n\n')
 
+    # Array
     list_of_strings = ["CIS", "Rule", "Passed"]
     for rule_report in audit_report:
         if rule_report[6] == True:
@@ -395,7 +395,8 @@ def save_to_md(fails, remaining_fails, success_fixes, audit_report, all):
     print("Filename: " + filename + ".md")
     print(colored("[✓] .md file saved in current directory.\n", success))
     wait(0.5)
-    if all == False:
+
+    if all == False:    # Check if user asked to save result in all formats
         input(colored("""
  ┌──────────────────────────────────────────┐
  │ Press Enter to finish and return to menu │
@@ -425,7 +426,7 @@ def save_to_csv(fails, remaining_fails, success_fixes, audit_report, all):
     print(colored("[✓] .csv file saved in current directory.\n", success))
     wait(0.5)
     
-    if all == False:
+    if all == False:    # Check if user asked to save result in all formats
         input(colored("""
  ┌──────────────────────────────────────────┐
  │ Press Enter to finish and return to menu │
@@ -434,13 +435,16 @@ def save_to_csv(fails, remaining_fails, success_fixes, audit_report, all):
         menu()
 
 
+# TODO
 # Saves the report to a pdf file
 def save_to_pdf(fails, remaining_fails, success_fixes, audit_report, all):
     print("TODO")
-    print("File saved in txt for now.")
-    # print("Filename: " + filename + ".pdf")
+    audit_date = audit_report[0]
+    filename = "audit_report_" + str(audit_date)
+    print("Filename: " + filename + ".pdf")
     wait(0.5)
-    if all == False:
+
+    if all == False:    # Check if user asked to save result in all formats
         input(colored("""
  ┌──────────────────────────────────────────┐
  │ Press Enter to finish and return to menu │
@@ -473,9 +477,8 @@ def save_results(fails, remaining_fails, success_fixes, audit_report):
  ║       1. Save to txt file           ║
  ║       2. Save to md file            ║
  ║       3. Save to csv file           ║
- ║       4. Save to pdf file           ║
- ║       5. Save to all formats        ║
- ║       6. Cancel                     ║
+ ║       4. Save to all formats        ║
+ ║       5. Cancel                     ║
  ║                                     ║
  ╚═════════════════════════════════════╝""")
     print("")
@@ -485,9 +488,9 @@ def save_results(fails, remaining_fails, success_fixes, audit_report):
     if user_input == '1': clear(), save_to_txt(fails, remaining_fails, success_fixes, audit_report, False)
     elif user_input == '2': clear(), save_to_md(fails, remaining_fails, success_fixes, audit_report, False)
     elif user_input == '3': clear(), save_to_csv(fails, remaining_fails, success_fixes, audit_report, False)
-    elif user_input == '4': clear(), save_to_pdf(fails, remaining_fails, success_fixes, audit_report, False)
-    elif user_input == '5': clear(), save_to_all_formats(fails, remaining_fails, success_fixes, audit_report)
-    elif user_input == '6': print("\nCancelled !"), wait(0.25), clear(), menu()
+    # elif user_input == '4': clear(), save_to_pdf(fails, remaining_fails, success_fixes, audit_report, False)
+    elif user_input == '4': clear(), save_to_all_formats(fails, remaining_fails, success_fixes, audit_report)
+    elif user_input == '5': print("\nCancelled !"), wait(0.25), clear(), menu()
     else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(0.5), save_results(fails, remaining_fails, success_fixes, audit_report)
 
 
@@ -534,9 +537,9 @@ def audit():
     print("\n " + str(nb_audits) + " rules to check\n")
     wait(0.5)
 
+    # Initialization of successes/fails counters, and usefull report arrays
     ok = 0
     nok = 0
-
     fails = []
     audit_report = []
     remaining_fails = []
@@ -570,7 +573,6 @@ def audit():
         remaining_audits -= 1
         rule_report = [id, cis, title, audit_cmd, expected, fix_cmd, passed]
         audit_report.append(rule_report)
-        # print("Remaining rules to audit :" + str(remaining_audits) + "\n")
         wait(0.05)
 
     input(colored("""
