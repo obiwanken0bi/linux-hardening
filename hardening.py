@@ -7,6 +7,7 @@ from datetime import datetime
 from termcolor import colored
 from mdutils.mdutils import MdUtils
 from obiwan import obiwan
+from title import title
 
 
 # Colors for termcolor
@@ -101,6 +102,7 @@ def switch_to_en():
 def main():
     clear()
     delay_print(obiwan, 0.0001)
+    delay_print(title, 0.0005)
     wait(0.1)
     menu()
 
@@ -269,7 +271,7 @@ def fix_all(fails, audit_report):
     for fail_id in fails:
         for entry in audits:
             if entry['id'] == fail_id:
-                print(colored("\n\nVulnerability: " + entry['title'] + " (CIS " + entry['cis'] + ")\n", attrs=['bold']))
+                print(colored("\n\nRule: " + entry['title'] + " (CIS " + entry['cis'] + ")\n", attrs=['bold']))
 
                 if (entry['remediation'] != ""):
                     wait(0.1)
@@ -318,7 +320,7 @@ def fix_one_by_one(fails, audit_report):
     for fail_id in fails:
         for entry in audits:
             if entry['id'] == fail_id:
-                print(colored("\n\nVulnerability: " + entry['title'] + " (CIS " + entry['cis'] + ")", attrs=['bold']))
+                print(colored("\n\nRule: " + entry['title'] + " (CIS " + entry['cis'] + ")", attrs=['bold']))
 
                 if (entry['remediation'] != ""):
                     user_input = ""
@@ -424,16 +426,16 @@ def save_results(fails, remaining_fails, success_fixes, audit_report):
  ║       4. Save to all formats        ║
  ║       5. Cancel                     ║
  ║                                     ║
- ╚═════════════════════════════════════╝""")
-    print("")
+ ╚═════════════════════════════════════╝\n""")
 
     user_input = input("Enter your choice: ")
+    print("")
 
-    if user_input == '1': clear(), save_to_txt(fails, remaining_fails, success_fixes, audit_report, False)
-    elif user_input == '2': clear(), save_to_md(fails, remaining_fails, success_fixes, audit_report, False)
-    elif user_input == '3': clear(), save_to_csv(fails, remaining_fails, success_fixes, audit_report, False)
-    # elif user_input == '4': clear(), save_to_pdf(fails, remaining_fails, success_fixes, audit_report, False)
-    elif user_input == '4': clear(), save_to_all_formats(fails, remaining_fails, success_fixes, audit_report)
+    if user_input == '1': save_to_txt(fails, remaining_fails, success_fixes, audit_report, False)
+    elif user_input == '2': save_to_md(fails, remaining_fails, success_fixes, audit_report, False)
+    elif user_input == '3': save_to_csv(fails, remaining_fails, success_fixes, audit_report, False)
+    # elif user_input == '4': save_to_pdf(fails, remaining_fails, success_fixes, audit_report, False)
+    elif user_input == '4': save_to_all_formats(fails, remaining_fails, success_fixes, audit_report)
     elif user_input == '5': print("\nCancelled !"), wait(0.25), clear(), menu()
     else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(0.5), save_results(fails, remaining_fails, success_fixes, audit_report)
 
