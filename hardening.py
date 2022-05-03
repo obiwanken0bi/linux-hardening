@@ -6,9 +6,7 @@ import threading, queue
 from datetime import datetime
 from termcolor import colored
 from mdutils.mdutils import MdUtils
-from obiwan import obiwan
-from title import title
-from yoda import yoda
+from designs import obiwan, title, yoda
 
 
 # Colors for termcolor
