@@ -8,6 +8,7 @@ from termcolor import colored
 from mdutils.mdutils import MdUtils
 from obiwan import obiwan
 from title import title
+from yoda import yoda
 
 
 # Colors for termcolor
@@ -123,10 +124,45 @@ def menu():
 
     user_input = input(" Enter your choice: ")
 
-    if user_input == '1': clear(), print("\nNothing for now"), wait(1), menu()
-    elif user_input == '2': clear(), audit(), wait(1), menu()
+    if user_input == '1': clear(), how_to()
+    elif user_input == '2': clear(), audit()
     elif user_input == '3': print("\nBye !\n"), wait(1), exit()
     else: print(colored("\nIncorrect input, please choose a valid number.", info)), wait(0.5), menu()
+
+
+# Displays 'how to use this tool'
+def how_to():
+    delay_print(yoda, 0.0001)
+    wait(0.25)
+    print(colored("\n\n ---------------- System distributions and versions ----------------", attrs=['bold']))
+    print("""
+ For now, this tool is designed for the following Linux systems:
+   - Ubuntu 20.04 LTS
+   - Debian 10
+
+ Other distributions will be supported soon!
+ """)
+    print(colored("\n -------------------------- How to use it --------------------------", attrs=['bold']))
+    print("""
+ Don't panic! You are guided through the whole process.
+
+ For each menu, you'll have several options and you'll juste have
+ to choose one by entering the corresponding number when asked.
+
+ Sometimes, you'll be asked a question. You'll juste have to answer
+ with 'y' (for 'yes') or 'n' (for 'no').
+
+ It's that simple!
+
+ Let's run your first audit!
+ """)
+    input(colored("""
+ ┌─────────────────────────────────────────┐
+ │ Press Enter to go back to the main menu │
+ └─────────────────────────────────────────┘
+""", default))
+    clear()
+    menu()
 
 
 # Performs audit on system from JSON rules list
